@@ -1,9 +1,32 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:window_size/window_size.dart';
 
 import 'theme.dart';
 
+const double windowWidth = 500;
+const double windowHeight = 800;
+
 void main() {
+  setupWindow();
   runApp(const ThingSetApp());
+}
+
+void setupWindow() {
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    WidgetsFlutterBinding.ensureInitialized();
+    setWindowTitle('ThingSet App');
+    setWindowMinSize(const Size(windowWidth, windowHeight));
+    setWindowMaxSize(const Size(windowWidth, windowHeight));
+    getCurrentScreen().then((screen) {
+      setWindowFrame(Rect.fromCenter(
+        center: screen!.frame.center,
+        width: windowWidth,
+        height: windowHeight,
+      ));
+    });
+  }
 }
 
 class ThingSetApp extends StatelessWidget {
