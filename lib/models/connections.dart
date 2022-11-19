@@ -1,16 +1,16 @@
 import 'package:flutter/foundation.dart';
 
-import '../connectors/thingset.dart';
+import '../clients/thingset.dart';
 
 class NodeConnection {
   final String _nodeId;
-  final ThingSetConnector _connector;
+  final ThingSetClient _client;
 
   get nodeId => _nodeId;
 
-  get connector => _connector;
+  get client => _client;
 
-  NodeConnection(this._nodeId, this._connector);
+  NodeConnection(this._nodeId, this._client);
 }
 
 class ConnectionsModel extends ChangeNotifier {

@@ -1,11 +1,11 @@
 // This class mainly handles routing of request/response messages and pub/sub
 // messages, so that the application has a simple interface to request data.
-abstract class ThingSetConnector {
+abstract class ThingSetClient {
   final String _type;
 
   get type => _type;
 
-  ThingSetConnector(this._type);
+  ThingSetClient(this._type);
 
   // Establish connection with the remote node
   Future<void> connect();
@@ -15,7 +15,7 @@ abstract class ThingSetConnector {
   Future<void> disconnect();
 }
 
-class DummyClient extends ThingSetConnector {
+class DummyClient extends ThingSetClient {
   DummyClient(super.type);
 
   @override
