@@ -1,16 +1,12 @@
-# thingset_app
+# ThingSet App
 
-A new Flutter project.
+This app devloped with [Flutter](https://docs.flutter.dev/) provides a generic user inferface for
+any device supporting the [ThingSet protocol](https://thingset.io).
 
-## Getting Started
+The connection can be direct (via Bluetooth) or through a cloud backend (via WebSockets).
 
-This project is a starting point for a Flutter application.
+## Run the app on a desktop computer
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```
+flutter run -d linux
+```
