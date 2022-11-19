@@ -84,7 +84,9 @@ class NodesList extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       itemCount: nodes.length,
       itemBuilder: (BuildContext context, int index) {
-        return NodeItem(label: nodes[index]);
+        return NodeItem(
+            label:
+                nodes[index].nodeId + ' (' + nodes[index].connector.type + ')');
       },
       separatorBuilder: (BuildContext context, int index) => const Divider(),
     );
