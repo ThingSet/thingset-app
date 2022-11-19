@@ -52,7 +52,7 @@ class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key, required this.title});
 
   void addNode(BuildContext context) {
-    Provider.of<ConnectionsModel>(context, listen: false).add("test");
+    Provider.of<ConnectionsModel>(context, listen: false).add('test');
   }
 
   @override
@@ -62,26 +62,61 @@ class MyHomePage extends StatelessWidget {
       appBar: AppBar(
         title: Text(title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'Connected nodes:',
-            ),
-            Text(
-              '$nodes',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
-      ),
+      body: const Center(child: NodesList()),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           addNode(context);
         },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class NodesList extends StatelessWidget {
+  const NodesList({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    var nodes = Provider.of<ConnectionsModel>(context).nodes;
+    return ListView.separated(
+      padding: const EdgeInsets.all(8),
+      itemCount: nodes.length,
+      itemBuilder: (BuildContext context, int index) {
+        return NodeItem(label: nodes[index]);
+      },
+      separatorBuilder: (BuildContext context, int index) => const Divider(),
+    );
+  }
+}
+
+class NodeItem extends StatelessWidget {
+  final String label;
+
+  const NodeItem({super.key, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () {
+          print('pressed');
+        },
+        child: Container(
+          height: 50,
+          color: Colors.grey[300],
+          child: Center(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
