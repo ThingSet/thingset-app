@@ -41,8 +41,8 @@ final _router = GoRouter(
       builder: (context, state) => const HomeScreen(),
       routes: [
         GoRoute(
-          path: 'node',
-          builder: (context, state) => const NodeScreen(),
+          path: 'node/:id',
+          builder: (context, state) => NodeScreen(nodeId: state.params['id']!),
         ),
       ],
     ),

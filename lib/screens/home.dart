@@ -9,25 +9,13 @@ class HomeScreen extends StatelessWidget {
 
   const HomeScreen({super.key});
 
-  void addNode(BuildContext context) {
-    Provider.of<ConnectionsModel>(context, listen: false).add('test');
-  }
-
   @override
   Widget build(BuildContext context) {
-    var nodes = Provider.of<ConnectionsModel>(context).nodes;
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
       ),
       body: const Center(child: NodesList()),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          addNode(context);
-        },
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
     );
   }
 }
@@ -42,9 +30,7 @@ class NodesList extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       itemCount: nodes.length,
       itemBuilder: (BuildContext context, int index) {
-        return NodeItem(
-            label:
-                nodes[index].nodeId + ' (' + nodes[index].connector.type + ')');
+        return NodeItem(node: nodes[index]);
       },
       separatorBuilder: (BuildContext context, int index) => const Divider(),
     );
@@ -52,9 +38,9 @@ class NodesList extends StatelessWidget {
 }
 
 class NodeItem extends StatelessWidget {
-  final String label;
+  final NodeConnection node;
 
-  const NodeItem({super.key, required this.label});
+  const NodeItem({super.key, required this.node});
 
   @override
   Widget build(BuildContext context) {
@@ -62,14 +48,14 @@ class NodeItem extends StatelessWidget {
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: () {
-          context.go('/node');
+          context.go('/node/${node.nodeId}');
         },
         child: Container(
           height: 50,
           color: Colors.grey[300],
           child: Center(
             child: Text(
-              label,
+              node.nodeId + ' (' + node.client.type + ')',
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,

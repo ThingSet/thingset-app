@@ -15,13 +15,21 @@ class NodeConnection {
 
 class ConnectionsModel extends ChangeNotifier {
   final List<NodeConnection> _nodes = [];
+  final List<ThingSetClient> _clients = [];
 
   get nodes => _nodes;
 
   get count => _nodes.length;
 
-  void add(String item) {
-    _nodes.add(NodeConnection(item, DummyClient("DummyClient")));
+  ConnectionsModel() {
+    final dummy = DummyClient("DummyClient");
+    _clients.add(dummy);
+
+    for (final client in _clients) {
+      for (final node in client.listNodes()) {
+        _nodes.add(NodeConnection(node, client));
+      }
+    }
     notifyListeners();
   }
 }

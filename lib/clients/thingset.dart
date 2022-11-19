@@ -13,6 +13,8 @@ abstract class ThingSetClient {
   Future<String> request(String msg);
   // Disconnect from the node
   Future<void> disconnect();
+  // List all connected nodes
+  List<String> listNodes();
 }
 
 class DummyClient extends ThingSetClient {
@@ -31,5 +33,10 @@ class DummyClient extends ThingSetClient {
   @override
   Future<void> disconnect() async {
     throw Exception('Dummy client. Not possible to disconnect.');
+  }
+
+  @override
+  List<String> listNodes() {
+    return ["ABCD1234", "XYZ12345"];
   }
 }
