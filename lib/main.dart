@@ -1,10 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:window_size/window_size.dart';
 
 import 'models/connections.dart';
+import 'screens/home.dart';
+import 'screens/node.dart';
 import 'theme.dart';
 
 const double windowWidth = 500;
@@ -31,6 +34,21 @@ void setupWindow() {
   }
 }
 
+final _router = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/',
+      builder: (context, state) => const HomeScreen(),
+      routes: [
+        GoRoute(
+          path: 'node',
+          builder: (context, state) => const NodeScreen(),
+        ),
+      ],
+    ),
+  ],
+);
+
 class ThingSetApp extends StatelessWidget {
   const ThingSetApp({super.key});
 
@@ -38,88 +56,10 @@ class ThingSetApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
         create: (context) => ConnectionsModel(),
-        child: MaterialApp(
+        child: MaterialApp.router(
           title: 'ThingSet App',
           theme: theme,
-          home: const MyHomePage(title: 'ThingSet App'),
+          routerConfig: _router,
         ));
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  final String title;
-
-  const MyHomePage({super.key, required this.title});
-
-  void addNode(BuildContext context) {
-    Provider.of<ConnectionsModel>(context, listen: false).add('test');
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    var nodes = Provider.of<ConnectionsModel>(context).nodes;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: const Center(child: NodesList()),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          addNode(context);
-        },
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-}
-
-class NodesList extends StatelessWidget {
-  const NodesList({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    var nodes = Provider.of<ConnectionsModel>(context).nodes;
-    return ListView.separated(
-      padding: const EdgeInsets.all(8),
-      itemCount: nodes.length,
-      itemBuilder: (BuildContext context, int index) {
-        return NodeItem(
-            label:
-                nodes[index].nodeId + ' (' + nodes[index].connector.type + ')');
-      },
-      separatorBuilder: (BuildContext context, int index) => const Divider(),
-    );
-  }
-}
-
-class NodeItem extends StatelessWidget {
-  final String label;
-
-  const NodeItem({super.key, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () {
-          print('pressed');
-        },
-        child: Container(
-          height: 50,
-          color: Colors.grey[300],
-          child: Center(
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }
