@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:window_size/window_size.dart';
 
-import 'models/connections.dart';
+import 'models/app.dart';
 import 'screens/home.dart';
 import 'screens/node.dart';
 import 'theme.dart';
@@ -41,8 +41,11 @@ final _router = GoRouter(
       builder: (context, state) => const HomeScreen(),
       routes: [
         GoRoute(
-          path: 'node/:id',
-          builder: (context, state) => NodeScreen(nodeId: state.params['id']!),
+          path: ':conn/:id',
+          builder: (context, state) => NodeScreen(
+            connectorName: state.params['conn']!,
+            nodeId: state.params['id']!,
+          ),
         ),
       ],
     ),
@@ -55,7 +58,7 @@ class ThingSetApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-        create: (context) => ConnectionsModel(),
+        create: (context) => AppModel(),
         child: MaterialApp.router(
           title: 'ThingSet App',
           theme: theme,

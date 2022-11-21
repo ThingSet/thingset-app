@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../models/connections.dart';
+import '../models/app.dart';
+import '../models/connector.dart';
 
 class HomeScreen extends StatelessWidget {
   final String title = 'ThingSet App';
@@ -25,22 +26,32 @@ class NodesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var nodes = Provider.of<ConnectionsModel>(context).nodes;
+    const connectorName = 'dummy';
+    final connector = Provider.of<AppModel>(context).connector(connectorName)!;
+    final nodeIds = connector.nodeIds;
     return ListView.separated(
       padding: const EdgeInsets.all(8),
-      itemCount: nodes.length,
-      itemBuilder: (BuildContext context, int index) {
-        return NodeItem(node: nodes[index]);
-      },
+      itemCount: nodeIds.length,
+      itemBuilder: (BuildContext context, int index) => NodeItem(
+          connectorName: connectorName,
+          connector: connector,
+          nodeId: nodeIds[index]),
       separatorBuilder: (BuildContext context, int index) => const Divider(),
     );
   }
 }
 
 class NodeItem extends StatelessWidget {
-  final NodeConnection node;
+  final String connectorName;
+  final ConnectorModel connector;
+  final String nodeId;
 
-  const NodeItem({super.key, required this.node});
+  const NodeItem({
+    super.key,
+    required this.connectorName,
+    required this.connector,
+    required this.nodeId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -48,14 +59,14 @@ class NodeItem extends StatelessWidget {
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: () {
-          context.go('/node/${node.nodeId}');
+          context.go('/$connectorName/$nodeId');
         },
         child: Container(
           height: 50,
           color: Colors.grey[300],
           child: Center(
             child: Text(
-              node.nodeId + ' (' + node.client.type + ')',
+              '$nodeId (${connector.client.type})',
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
