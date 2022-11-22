@@ -22,10 +22,13 @@ class ConnectorModel extends ChangeNotifier {
 
   NodeModel? node(String name) => _nodes[name];
 
-  ConnectorModel(this._client) {
-    for (var nodeId in _client.listNodes()) {
-      nodes[nodeId] = NodeModel();
-    }
+  ConnectorModel(this._client);
+
+  // Update list of nodes connected to the client
+  Future<void> updateNodes() async {
+    // dummy implementation
+    _nodes['test_node'] = NodeModel();
+    await Future.delayed(Duration(seconds: 1));
   }
 
   /// Update data in the node based on desired state

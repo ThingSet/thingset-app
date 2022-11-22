@@ -16,27 +16,55 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(title),
       ),
-      body: const Center(child: NodesList()),
+      body: Center(
+        child: Consumer<AppModel>(
+          builder: (context, appModel, child) {
+            const connectorName = 'dummy';
+            final connector = appModel.connectors[connectorName];
+            return NodesList(
+                connectorName: connectorName, connector: connector);
+          },
+        ),
+      ),
     );
   }
 }
 
 class NodesList extends StatelessWidget {
-  const NodesList({super.key});
+  final String connectorName;
+  final ConnectorModel connector;
+
+  const NodesList(
+      {super.key, required this.connectorName, required this.connector});
 
   @override
   Widget build(BuildContext context) {
-    const connectorName = 'dummy';
-    final connector = Provider.of<AppModel>(context).connector(connectorName)!;
-    final nodeIds = connector.nodeIds;
-    return ListView.separated(
-      padding: const EdgeInsets.all(8),
-      itemCount: nodeIds.length,
-      itemBuilder: (BuildContext context, int index) => NodeItem(
-          connectorName: connectorName,
-          connector: connector,
-          nodeId: nodeIds[index]),
-      separatorBuilder: (BuildContext context, int index) => const Divider(),
+    return ChangeNotifierProvider<ConnectorModel>(
+      create: (_) => connector,
+      child: Consumer<ConnectorModel>(
+        builder: (_, model, __) {
+          return FutureBuilder<void>(
+            future: model.updateNodes(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                return ListView.separated(
+                  padding: const EdgeInsets.all(8),
+                  itemCount: model.nodeIds.length,
+                  itemBuilder: (BuildContext context, int index) => NodeItem(
+                    connectorName: connectorName,
+                    connector: model,
+                    nodeId: model.nodeIds[index],
+                  ),
+                  separatorBuilder: (BuildContext context, int index) =>
+                      const Divider(),
+                );
+              } else {
+                return const CircularProgressIndicator();
+              }
+            },
+          );
+        },
+      ),
     );
   }
 }
