@@ -16,5 +16,7 @@ class AppModel extends ChangeNotifier {
   AppModel() {
     // initialize available clients and create a connector for them
     _connectors['dummy'] = ConnectorModel(DummyClient('DummyClient'));
+    _connectors['ws'] =
+        ConnectorModel(WebSocketClient('ws://127.0.0.1:8000/app'));
   }
 }

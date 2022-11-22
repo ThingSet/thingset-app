@@ -19,7 +19,7 @@ class HomeScreen extends StatelessWidget {
       body: Center(
         child: Consumer<AppModel>(
           builder: (context, appModel, child) {
-            const connectorName = 'dummy';
+            const connectorName = 'ws';
             final connector = appModel.connectors[connectorName];
             return NodesList(
                 connectorName: connectorName, connector: connector);

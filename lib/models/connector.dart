@@ -26,9 +26,10 @@ class ConnectorModel extends ChangeNotifier {
 
   // Update list of nodes connected to the client
   Future<void> updateNodes() async {
-    // dummy implementation
-    _nodes['test_node'] = NodeModel();
-    await Future.delayed(Duration(seconds: 1));
+    _client.connect();
+    final res = await _client.request('?//');
+    // ToDo: parse response
+    print(res);
   }
 
   /// Update data in the node based on desired state
