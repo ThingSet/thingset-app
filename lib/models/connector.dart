@@ -2,6 +2,8 @@
 ///
 /// Initializes different types of clients and assigns them to nodes
 
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 
 import 'node.dart';
@@ -26,10 +28,17 @@ class ConnectorModel extends ChangeNotifier {
 
   // Update list of nodes connected to the client
   Future<void> updateNodes() async {
+    // ToDo: place somewhere else
     _client.connect();
-    final res = await _client.request('?//');
-    // ToDo: parse response
-    print(res);
+
+    final resp = await _client.request('?//');
+    if (resp.status.isContent()) {
+      for (final nodeId in jsonDecode(resp.data)) {
+        if (_nodes[nodeId] == null && nodeId != '') {
+          _nodes[nodeId] = NodeModel();
+        }
+      }
+    }
   }
 
   /// Update data in the node based on desired state
