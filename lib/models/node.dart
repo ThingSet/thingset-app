@@ -7,4 +7,9 @@ class NodeModel extends ChangeNotifier {
   get desired => _desired;
 
   get reported => _reported;
+
+  void mergeReported(dynamic data) {
+    // ToDo: Proper implementation
+    _reported['test'] = data;
+  }
 }

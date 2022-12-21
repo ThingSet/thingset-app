@@ -16,6 +16,8 @@ class ConnectorModel extends ChangeNotifier {
   /// ThingSet client used by this connector
   final ThingSetClient _client;
 
+  bool connected = false;
+
   get client => _client;
 
   get nodeIds => _nodes.keys.toList();
@@ -29,7 +31,10 @@ class ConnectorModel extends ChangeNotifier {
   // Update list of nodes connected to the client
   Future<void> updateNodes() async {
     // ToDo: place somewhere else
-    _client.connect();
+    if (!connected) {
+      _client.connect();
+      connected = true;
+    }
 
     final resp = await _client.request('?//');
     if (resp.status.isContent()) {
@@ -48,6 +53,8 @@ class ConnectorModel extends ChangeNotifier {
 
   /// Retrieve data from node through the client
   Future<void> pull(String nodeId, String path) async {
-    throw Exception('Yet to be implemented');
+    final reqString = path.isEmpty ? '?/$nodeId' : '?/$nodeId/$path';
+    final resp = await _client.request(reqString);
+    _nodes[nodeId]?.mergeReported(resp.data);
   }
 }

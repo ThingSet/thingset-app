@@ -47,21 +47,24 @@ abstract class ThingSetClient {
 
 class WebSocketClient extends ThingSetClient {
   final String baseUrl;
-  WebSocketChannel? channel;
+  Stream? receiver;
+  WebSocketSink? sender;
 
   WebSocketClient(this.baseUrl) : super('WebSocket');
 
   @override
   Future<void> connect() async {
-    channel = WebSocketChannel.connect(Uri.parse(baseUrl));
+    final wsChannel = WebSocketChannel.connect(Uri.parse(baseUrl));
+    receiver = wsChannel.stream.asBroadcastStream();
+    sender = wsChannel.sink;
   }
 
   @override
   Future<ThingSetResponse> request(String msg) async {
-    if (channel != null) {
-      channel!.sink.add(msg);
-      await for (final value
-          in channel!.stream.timeout(const Duration(seconds: 3))) {
+    if (sender != null) {
+      sender!.add(msg);
+      await for (final value in receiver!.timeout(const Duration(seconds: 3))) {
+        // ToDo: Check if receiver stream has to be cancelled here
         final matches = RegExp(respRegExp).firstMatch(value.toString());
         if (matches != null && matches.groupCount == 2) {
           final status = matches[1];
@@ -76,7 +79,7 @@ class WebSocketClient extends ThingSetClient {
 
   @override
   Future<void> disconnect() async {
-    channel?.sink.close();
+    sender?.close();
   }
 }
 
