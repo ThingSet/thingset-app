@@ -55,6 +55,8 @@ class ConnectorModel extends ChangeNotifier {
   Future<void> pull(String nodeId, String path) async {
     final reqString = path.isEmpty ? '?/$nodeId' : '?/$nodeId/$path';
     final resp = await _client.request(reqString);
-    _nodes[nodeId]?.mergeReported(resp.data);
+    if (resp.status.isContent()) {
+      _nodes[nodeId]?.mergeReported(path, jsonDecode(resp.data));
+    }
   }
 }

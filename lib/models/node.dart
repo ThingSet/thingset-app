@@ -8,8 +8,17 @@ class NodeModel extends ChangeNotifier {
 
   get reported => _reported;
 
-  void mergeReported(dynamic data) {
-    // ToDo: Proper implementation
-    _reported['test'] = data;
+  void mergeReported(String path, dynamic jsonData) {
+    Map<String, dynamic> obj = _reported;
+    if (path.isNotEmpty) {
+      for (final chunk in path.split('/')) {
+        if (!obj.containsKey(chunk) || obj[chunk] == null) {
+          Map<String, dynamic> newMap = {};
+          obj[chunk] = newMap;
+        }
+        obj = obj[chunk];
+      }
+    }
+    obj.addAll(jsonData);
   }
 }
