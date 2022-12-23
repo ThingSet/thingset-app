@@ -20,5 +20,6 @@ class NodeModel extends ChangeNotifier {
       }
     }
     obj.addAll(jsonData);
+    notifyListeners();
   }
 }

@@ -56,7 +56,10 @@ class ConnectorModel extends ChangeNotifier {
     final reqString = path.isEmpty ? '?/$nodeId' : '?/$nodeId/$path';
     final resp = await _client.request(reqString);
     if (resp.status.isContent()) {
-      _nodes[nodeId]?.mergeReported(path, jsonDecode(resp.data));
+      final jsonData = jsonDecode(resp.data);
+      if (jsonData is Map) {
+        _nodes[nodeId]?.mergeReported(path, jsonData);
+      }
     }
   }
 }
