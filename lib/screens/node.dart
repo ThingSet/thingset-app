@@ -130,10 +130,19 @@ class DataGroup extends StatelessWidget {
         ),
         children: <Widget>[
           if (node.reported[groupName] != null)
-            Text(
-              node.reported[groupName].toString(),
-              softWrap: true,
-            )
+            if (node.reported[groupName] is Map)
+              for (final item in node.reported[groupName].keys)
+                ListTile(
+                  title: Text(item.toString()),
+                  trailing: ConstrainedBox(
+                    constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.4),
+                    child: Text(
+                      node.reported[groupName][item].toString(),
+                      softWrap: true,
+                    ),
+                  ),
+                )
           else
             const LinearProgressIndicator(),
         ],
