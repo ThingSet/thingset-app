@@ -139,29 +139,36 @@ class DataGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-      child: ExpansionTile(
-        title: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Text(groupName),
+      child: Card(
+        child: ExpansionTile(
+          title: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Text(
+              groupName,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          children: <Widget>[
+            if (data != null)
+              ...listDataObjects(
+                context,
+                connector,
+                node,
+                nodeId,
+                path,
+                data,
+              )
+            else
+              const LinearProgressIndicator(),
+          ],
+          onExpansionChanged: (value) {
+            if (value == true) {
+              connector.pull(nodeId, path);
+            }
+          },
         ),
-        children: <Widget>[
-          if (data != null)
-            ...listDataObjects(
-              context,
-              connector,
-              node,
-              nodeId,
-              path,
-              data,
-            )
-          else
-            const LinearProgressIndicator(),
-        ],
-        onExpansionChanged: (value) {
-          if (value == true) {
-            connector.pull(nodeId, path);
-          }
-        },
       ),
     );
   }
