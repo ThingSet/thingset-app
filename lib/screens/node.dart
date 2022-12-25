@@ -60,10 +60,19 @@ class NodeData extends StatelessWidget {
       value: node,
       child: Consumer<NodeModel>(
         builder: (_, model, __) => SingleChildScrollView(
-          child: DataObjects(
-            connector: connector,
-            node: node,
-            nodeId: nodeId,
+          child: Center(
+            child: ListView(
+              shrinkWrap: true,
+              padding: const EdgeInsets.all(8),
+              children: listDataObjects(
+                context,
+                connector,
+                node,
+                nodeId,
+                '',
+                node.reported,
+              ),
+            ),
           ),
         ),
       ),
@@ -71,38 +80,41 @@ class NodeData extends StatelessWidget {
   }
 }
 
-class DataObjects extends StatelessWidget {
-  final ConnectorModel connector;
-  final NodeModel node;
-  final String nodeId;
-
-  const DataObjects({
-    super.key,
-    required this.connector,
-    required this.node,
-    required this.nodeId,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: ListView.separated(
-        shrinkWrap: true,
-        padding: const EdgeInsets.all(8),
-        itemCount: node.reported.length,
-        itemBuilder: (BuildContext context, int index) {
-          String key = node.reported.keys.elementAt(index);
-          return DataGroup(
-            connector: connector,
-            node: node,
-            nodeId: nodeId,
-            groupName: key,
-          );
-        },
-        separatorBuilder: (BuildContext context, int index) => const Divider(),
-      ),
-    );
-  }
+List<Widget> listDataObjects(
+  BuildContext context,
+  ConnectorModel connector,
+  NodeModel node,
+  String nodeId,
+  String path,
+  Map<String, dynamic> data,
+) {
+  return <Widget>[
+    for (final item in data.keys)
+      if (item[0].toUpperCase() == item[0] ||
+          data[item] == null ||
+          data[item] is Map)
+        // group
+        DataGroup(
+          connector: connector,
+          node: node,
+          nodeId: nodeId,
+          groupName: item,
+          path: path.isEmpty ? item : '$path/$item',
+          data: data[item],
+        )
+      else
+        ListTile(
+          title: Text(item.toString()),
+          trailing: ConstrainedBox(
+            constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.4),
+            child: Text(
+              data[item].toString(),
+              softWrap: true,
+            ),
+          ),
+        )
+  ];
 }
 
 class DataGroup extends StatelessWidget {
@@ -110,6 +122,8 @@ class DataGroup extends StatelessWidget {
   final NodeModel node;
   final String nodeId;
   final String groupName;
+  final String path;
+  final dynamic data;
 
   const DataGroup({
     super.key,
@@ -117,6 +131,8 @@ class DataGroup extends StatelessWidget {
     required this.node,
     required this.nodeId,
     required this.groupName,
+    required this.path,
+    required this.data,
   });
 
   @override
@@ -129,26 +145,21 @@ class DataGroup extends StatelessWidget {
           child: Text(groupName),
         ),
         children: <Widget>[
-          if (node.reported[groupName] != null)
-            if (node.reported[groupName] is Map)
-              for (final item in node.reported[groupName].keys)
-                ListTile(
-                  title: Text(item.toString()),
-                  trailing: ConstrainedBox(
-                    constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.4),
-                    child: Text(
-                      node.reported[groupName][item].toString(),
-                      softWrap: true,
-                    ),
-                  ),
-                )
+          if (data != null)
+            ...listDataObjects(
+              context,
+              connector,
+              node,
+              nodeId,
+              path,
+              data,
+            )
           else
             const LinearProgressIndicator(),
         ],
         onExpansionChanged: (value) {
           if (value == true) {
-            connector.pull(nodeId, groupName);
+            connector.pull(nodeId, path);
           }
         },
       ),
