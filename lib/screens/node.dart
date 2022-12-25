@@ -103,16 +103,13 @@ List<Widget> listDataObjects(
           data: data[item],
         )
       else
-        ListTile(
-          title: Text(item.toString()),
-          trailing: ConstrainedBox(
-            constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.4),
-            child: Text(
-              data[item].toString(),
-              softWrap: true,
-            ),
-          ),
+        DataItem(
+          connector: connector,
+          node: node,
+          nodeId: nodeId,
+          itemName: item,
+          path: path.isEmpty ? item : '$path/$item',
+          data: data[item],
         )
   ];
 }
@@ -168,6 +165,66 @@ class DataGroup extends StatelessWidget {
               connector.pull(nodeId, path);
             }
           },
+        ),
+      ),
+    );
+  }
+}
+
+// correct UTF-8 string for units simplified for ThingSet
+const unitFix = {
+  'deg': '°',
+  'degC': '°C',
+  'pct': '%',
+  'm2': 'm²',
+  'm3': 'm³',
+};
+
+class DataItem extends StatelessWidget {
+  final ConnectorModel connector;
+  final NodeModel node;
+  final String nodeId;
+  final String itemName;
+  final String path;
+  final dynamic data;
+
+  const DataItem({
+    super.key,
+    required this.connector,
+    required this.node,
+    required this.nodeId,
+    required this.itemName,
+    required this.path,
+    required this.data,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final chunks = itemName.split('_');
+
+    // parse unit
+    var unit = chunks.length > 1
+        ? chunks[1] + (chunks.length > 2 ? '/$chunks[2]' : '')
+        : '';
+    if (unitFix.containsKey(unit)) {
+      unit = unitFix[unit]!;
+    }
+
+    // split camel case name
+    var descr = chunks[0].substring(1);
+    descr = descr.replaceAllMapped(RegExp(r'([a-z])([A-Z0-9])'),
+        (Match m) => '${m.group(1)} ${m.group(2)}');
+    descr = descr.replaceAllMapped(RegExp(r'([A-Z0-9])([A-Z][a-z])'),
+        (Match m) => '${m.group(1)} ${m.group(2)}');
+
+    return ListTile(
+      title: Text(descr),
+      trailing: ConstrainedBox(
+        constraints:
+            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.4),
+        child: Text(
+          "$data $unit",
+          softWrap: true,
         ),
       ),
     );
