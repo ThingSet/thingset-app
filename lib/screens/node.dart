@@ -93,7 +93,6 @@ List<Widget> listDataObjects(
       if (item[0].toUpperCase() == item[0] ||
           data[item] == null ||
           data[item] is Map)
-        // group
         DataGroup(
           connector: connector,
           node: node,
@@ -102,7 +101,10 @@ List<Widget> listDataObjects(
           path: path.isEmpty ? item : '$path/$item',
           data: data[item],
         )
-      else
+      else if (item != "cNodeID" &&
+          item[0] != 'a' &&
+          item[0] != 'e' &&
+          item[0] != 'm')
         DataItem(
           connector: connector,
           node: node,
