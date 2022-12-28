@@ -51,6 +51,19 @@ class ConnectorModel extends ChangeNotifier {
     throw Exception('Yet to be implemented');
   }
 
+  /// Update data in the node based on desired state
+  Future<dynamic> exec(String nodeId, String path, List params) async {
+    if (path.isEmpty) {
+      return;
+    }
+    final paramsJson = jsonEncode(params);
+    final reqString = '!/$nodeId/$path $paramsJson';
+    final resp = await _client.request(reqString);
+    if (resp.status.isValid() && resp.data.isNotEmpty) {
+      return jsonDecode(resp.data);
+    }
+  }
+
   /// Retrieve data from node through the client
   Future<void> pull(String nodeId, String path) async {
     final reqString = path.isEmpty ? '?/$nodeId' : '?/$nodeId/$path';

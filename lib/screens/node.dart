@@ -217,16 +217,37 @@ class DataItem extends StatelessWidget {
     descr = descr.replaceAllMapped(RegExp(r'([A-Z0-9])([A-Z][a-z])'),
         (Match m) => '${m.group(1)} ${m.group(2)}');
 
-    return ListTile(
-      title: Text(descr),
-      trailing: ConstrainedBox(
-        constraints:
-            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.4),
-        child: Text(
-          "$data $unit",
-          softWrap: true,
+    if (itemName[0] == 'x') {
+      Widget? paramsWidget;
+      if (data is List && data.isNotEmpty) {
+        paramsWidget = ConstrainedBox(
+          constraints:
+              BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.4),
+          child: Text("$data"),
+        );
+      }
+      return ListTile(
+        title: ElevatedButton(
+          child: Text(descr),
+          onPressed: () {
+            connector.exec(nodeId, path, []);
+          },
         ),
-      ),
-    );
+        trailing: paramsWidget,
+      );
+    } else {
+      Widget itemWidget = Text(
+        "$data $unit",
+        softWrap: true,
+      );
+      return ListTile(
+        title: Text(descr),
+        trailing: ConstrainedBox(
+          constraints:
+              BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.4),
+          child: itemWidget,
+        ),
+      );
+    }
   }
 }
