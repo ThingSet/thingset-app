@@ -22,4 +22,22 @@ class NodeModel extends ChangeNotifier {
     obj.addAll(jsonData);
     notifyListeners();
   }
+
+  void setDesired(String path, dynamic jsonData) {
+    Map<String, dynamic> obj = _desired;
+    if (path.isNotEmpty) {
+      for (final chunk in path.split('/')) {
+        if (chunk[0].toLowerCase() == chunk[0]) {
+          obj[chunk] = jsonData;
+          break;
+        } else if (!obj.containsKey(chunk) || obj[chunk] == null) {
+          Map<String, dynamic> newMap = {};
+          obj[chunk] = newMap;
+          obj = obj[chunk];
+        } else {
+          obj = obj[chunk];
+        }
+      }
+    }
+  }
 }

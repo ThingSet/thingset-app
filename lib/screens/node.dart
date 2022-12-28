@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/app.dart';
 import '../models/connector.dart';
 import '../models/node.dart';
+import '../widgets/stateful_input.dart';
 
 class NodeScreen extends StatelessWidget {
   final String connectorName;
@@ -238,16 +239,36 @@ class DataItem extends StatelessWidget {
         trailing: paramsWidget,
       );
     } else {
-      Widget itemWidget = Text(
-        "$data $unit",
-        softWrap: true,
-      );
+      Widget valueWidget;
+      if (itemName[0] == 'w' || itemName[0] == 's') {
+        if (data is bool) {
+          valueWidget = StatefulSwitch(
+            value: data,
+            onChanged: (value) {
+              node.setDesired(path, value);
+            },
+          );
+        } else {
+          valueWidget = StatefulTextField(
+            value: data,
+            unit: unit,
+            onChanged: (value) {
+              node.setDesired(path, value);
+            },
+          );
+        }
+      } else {
+        valueWidget = Text(
+          "$data $unit",
+          softWrap: true,
+        );
+      }
       return ListTile(
         title: Text(descr),
         trailing: ConstrainedBox(
           constraints:
               BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.4),
-          child: itemWidget,
+          child: valueWidget,
         ),
       );
     }
