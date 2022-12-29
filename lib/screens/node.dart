@@ -21,6 +21,15 @@ class NodeScreen extends StatelessWidget {
       return Scaffold(
         appBar: AppBar(
           title: Text(nodeId),
+          actions: <Widget>[
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              tooltip: 'Reload data from device',
+              onPressed: () {
+                connector.pull(nodeId, '');
+              },
+            ),
+          ],
         ),
         body: FutureBuilder<void>(
           future: connector.pull(nodeId, ''),
@@ -161,7 +170,10 @@ class DataGroup extends StatelessWidget {
                 data,
               )
             else
-              const LinearProgressIndicator(),
+              FutureBuilder<void>(
+                  future: connector.pull(nodeId, path),
+                  builder: (context, snapshot) =>
+                      const LinearProgressIndicator()),
           ],
           onExpansionChanged: (value) {
             if (value == true) {
