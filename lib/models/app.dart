@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import 'connector.dart';
-import '../clients/thingset.dart';
+import '../clients/thingset_ws.dart';
 
 class AppModel extends ChangeNotifier {
   /// Map of all connectors supported by the app
@@ -15,7 +15,6 @@ class AppModel extends ChangeNotifier {
 
   AppModel() {
     // initialize available clients and create a connector for them
-    _connectors['dummy'] = ConnectorModel(DummyClient('DummyClient'));
     _connectors['ws'] =
         ConnectorModel(WebSocketClient('ws://127.0.0.1:8000/app'));
   }

@@ -1,6 +1,3 @@
-import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:mutex/mutex.dart';
-
 const respRegExp = r':([0-9A-F]*)[^\.]*\. (.*)';
 
 class ThingSetStatusCode {
@@ -44,65 +41,4 @@ abstract class ThingSetClient {
   Future<ThingSetResponse> request(String msg);
   // Disconnect from the node
   Future<void> disconnect();
-}
-
-class WebSocketClient extends ThingSetClient {
-  final String baseUrl;
-  Stream? receiver;
-  WebSocketSink? sender;
-  final mutex = Mutex();
-
-  WebSocketClient(this.baseUrl) : super('WebSocket');
-
-  @override
-  Future<void> connect() async {
-    final wsChannel = WebSocketChannel.connect(Uri.parse(baseUrl));
-    receiver = wsChannel.stream.asBroadcastStream();
-    sender = wsChannel.sink;
-  }
-
-  @override
-  Future<ThingSetResponse> request(String msg) async {
-    if (sender != null) {
-      await mutex.acquire();
-      sender!.add(msg);
-      await for (final value in receiver!.timeout(const Duration(seconds: 3))) {
-        // ToDo: Check if receiver stream has to be cancelled here
-        final matches = RegExp(respRegExp).firstMatch(value.toString());
-        if (matches != null && matches.groupCount == 2) {
-          final status = matches[1];
-          final jsonData = matches[2]!;
-          mutex.release();
-          return ThingSetResponse(
-              ThingSetStatusCode.fromString(status!), jsonData);
-        }
-      }
-      mutex.release();
-    }
-    throw Exception('Client not connected');
-  }
-
-  @override
-  Future<void> disconnect() async {
-    sender?.close();
-  }
-}
-
-class DummyClient extends ThingSetClient {
-  DummyClient(super.type);
-
-  @override
-  Future<void> connect() async {
-    throw Exception('Dummy client. Not possible to connect.');
-  }
-
-  @override
-  Future<ThingSetResponse> request(String msg) async {
-    throw Exception('Client not connected.');
-  }
-
-  @override
-  Future<void> disconnect() async {
-    throw Exception('Dummy client. Not possible to disconnect.');
-  }
 }
