@@ -14,7 +14,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Center(child: Text(title)),
       ),
       body: Center(
         child: Consumer<AppModel>(
@@ -33,6 +33,7 @@ class HomeScreen extends StatelessWidget {
           },
         ),
       ),
+      backgroundColor: const Color(0xFFF0F0F0),
     );
   }
 }
@@ -91,25 +92,13 @@ class NodeItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
+    return Card(
+      child: ListTile(
+        title: Text(connector.nodes[nodeId].name),
+        subtitle: Text(nodeId),
         onTap: () {
           context.go('/$connectorName/$nodeId');
         },
-        child: Container(
-          height: 50,
-          color: Colors.grey[300],
-          child: Center(
-            child: Text(
-              '$nodeId (${connector.client.type})',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
