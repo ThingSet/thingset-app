@@ -41,8 +41,10 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
 
+  flutter_reactive_ble: ^5.0.3
   go_router: ^5.1.10
   mutex: ^3.0.1
+  permission_handler: ^10.2.0
   provider: ^6.0.4
   web_socket_channel: ^2.2.0
 
