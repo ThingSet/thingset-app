@@ -15,12 +15,31 @@ class NodeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var connector = Provider.of<AppModel>(context).connector(connectorName);
-    var node = connector?.nodes[nodeId];
+    ConnectorModel? connector =
+        Provider.of<AppModel>(context).connector(connectorName);
+    NodeModel? node = connector?.nodes[nodeId];
     if (connector != null && node != null) {
       return Scaffold(
         appBar: AppBar(
-          title: Text(nodeId),
+          title: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  node.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.0,
+                  ),
+                ),
+                Text(
+                  nodeId,
+                  style: const TextStyle(
+                    color: Color.fromARGB(255, 179, 179, 179),
+                    fontSize: 12.0,
+                  ),
+                )
+              ]),
           actions: <Widget>[
             IconButton(
               icon: const Icon(Icons.refresh),
