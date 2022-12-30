@@ -1,3 +1,4 @@
+const reqRegExp = r'([?=+\-!])([^ ]*) *(.*)';
 const respRegExp = r':([0-9A-F]*)[^\.]*\. (.*)';
 
 class ThingSetStatusCode {
@@ -9,6 +10,7 @@ class ThingSetStatusCode {
       : _status = int.parse(str, radix: 16);
 
   ThingSetStatusCode.serviceUnavailable() : _status = 0xC3;
+  ThingSetStatusCode.content() : _status = 0x85;
 
   int asInt() => _status;
 

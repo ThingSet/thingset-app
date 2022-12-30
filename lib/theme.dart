@@ -7,11 +7,15 @@ const accentColor = Color(0xFFF1DD38);
 final ColorScheme lightScheme = ColorScheme.fromSeed(
   brightness: Brightness.light,
   seedColor: primaryColor,
+  secondary: secondaryColor,
+  tertiary: accentColor,
 );
 
 final ColorScheme darkSheme = ColorScheme.fromSeed(
   brightness: Brightness.dark,
   seedColor: primaryColor,
+  secondary: secondaryColor,
+  tertiary: accentColor,
 );
 
 final theme = ThemeData(colorScheme: lightScheme);
