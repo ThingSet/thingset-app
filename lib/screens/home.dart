@@ -19,10 +19,17 @@ class HomeScreen extends StatelessWidget {
       body: Center(
         child: Consumer<AppModel>(
           builder: (context, appModel, child) {
-            const connectorName = 'ws';
-            final connector = appModel.connectors[connectorName];
-            return NodesList(
-                connectorName: connectorName, connector: connector);
+            return ListView.builder(
+              itemCount: appModel.connectors.length,
+              itemBuilder: (BuildContext context, int index) {
+                String connectorName =
+                    appModel.connectors.keys.elementAt(index);
+                return NodesList(
+                  connectorName: connectorName,
+                  connector: appModel.connectors[connectorName],
+                );
+              },
+            );
           },
         ),
       ),
@@ -48,6 +55,7 @@ class NodesList extends StatelessWidget {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
                 return ListView.separated(
+                  shrinkWrap: true,
                   padding: const EdgeInsets.all(8),
                   itemCount: model.nodeIds.length,
                   itemBuilder: (BuildContext context, int index) => NodeItem(
