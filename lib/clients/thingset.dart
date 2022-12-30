@@ -8,6 +8,8 @@ class ThingSetStatusCode {
   ThingSetStatusCode.fromString(String str)
       : _status = int.parse(str, radix: 16);
 
+  ThingSetStatusCode.serviceUnavailable() : _status = 0xC3;
+
   int asInt() => _status;
 
   String asString() => _status.toRadixString(16).padLeft(2, '0').toUpperCase();

@@ -23,20 +23,25 @@ class WebSocketClient extends ThingSetClient {
     if (sender != null) {
       await mutex.acquire();
       sender!.add(msg);
-      await for (final value in receiver!.timeout(const Duration(seconds: 3))) {
-        // ToDo: Check if receiver stream has to be cancelled here
-        final matches = RegExp(respRegExp).firstMatch(value.toString());
-        if (matches != null && matches.groupCount == 2) {
-          final status = matches[1];
-          final jsonData = matches[2]!;
-          mutex.release();
-          return ThingSetResponse(
-              ThingSetStatusCode.fromString(status!), jsonData);
+      try {
+        await for (final value
+            in receiver!.timeout(const Duration(seconds: 3))) {
+          // ToDo: Check if receiver stream has to be cancelled here
+          final matches = RegExp(respRegExp).firstMatch(value.toString());
+          if (matches != null && matches.groupCount == 2) {
+            final status = matches[1];
+            final jsonData = matches[2]!;
+            mutex.release();
+            return ThingSetResponse(
+                ThingSetStatusCode.fromString(status!), jsonData);
+          }
         }
+      } catch (error) {
+        return ThingSetResponse(ThingSetStatusCode.serviceUnavailable(), '');
       }
       mutex.release();
     }
-    throw Exception('Client not connected');
+    return ThingSetResponse(ThingSetStatusCode.serviceUnavailable(), '');
   }
 
   @override
