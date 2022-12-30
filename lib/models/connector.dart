@@ -41,6 +41,20 @@ class ConnectorModel extends ChangeNotifier {
       for (final nodeId in jsonDecode(resp.data)) {
         if (_nodes[nodeId] == null && nodeId != '') {
           _nodes[nodeId] = NodeModel();
+
+          // try to determine node name
+          await pull(nodeId, '');
+          if (_nodes[nodeId]!.reported.containsKey('cNodeName')) {
+            _nodes[nodeId]!.name = _nodes[nodeId]!.reported['cNodeName'];
+          } else if (_nodes[nodeId]!.reported.containsKey('Device')) {
+            await pull(nodeId, 'Device');
+            var device = _nodes[nodeId]!.reported['Device'];
+            if (device.containsKey('cManufacturer') &&
+                device.containsKey('cDeviceType')) {
+              _nodes[nodeId]!.name =
+                  '${device['cManufacturer']} ${device['cDeviceType']}';
+            }
+          }
         }
       }
     }
