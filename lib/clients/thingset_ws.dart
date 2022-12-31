@@ -37,6 +37,7 @@ class WebSocketClient extends ThingSetClient {
           }
         }
       } catch (error) {
+        _mutex.release();
         return ThingSetResponse(ThingSetStatusCode.serviceUnavailable(), '');
       }
       _mutex.release();
