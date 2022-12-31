@@ -7,17 +7,19 @@ import '../models/node.dart';
 import '../widgets/stateful_input.dart';
 
 class NodeScreen extends StatelessWidget {
-  final String connectorName;
-  final String nodeId;
+  final String _connectorName;
+  final String _nodeId;
 
   const NodeScreen(
-      {super.key, required this.connectorName, required this.nodeId});
+      {super.key, required connectorName, required nodeId})
+      : _connectorName = connectorName,
+        _nodeId = nodeId;
 
   @override
   Widget build(BuildContext context) {
     ConnectorModel? connector =
-        Provider.of<AppModel>(context).connector(connectorName);
-    NodeModel? node = connector?.nodes[nodeId];
+        Provider.of<AppModel>(context).connector(_connectorName);
+    NodeModel? node = connector?.nodes[_nodeId];
     if (connector != null && node != null) {
       return Scaffold(
         appBar: AppBar(
@@ -33,7 +35,7 @@ class NodeScreen extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  nodeId,
+                  _nodeId,
                   style: const TextStyle(
                     color: Color.fromARGB(255, 179, 179, 179),
                     fontSize: 12.0,
@@ -45,16 +47,17 @@ class NodeScreen extends StatelessWidget {
               icon: const Icon(Icons.refresh),
               tooltip: 'Reload data from device',
               onPressed: () {
-                connector.pull(nodeId, '');
+                connector.pull(_nodeId, '');
               },
             ),
           ],
         ),
         body: FutureBuilder<void>(
-          future: connector.pull(nodeId, ''),
+          future: connector.pull(_nodeId, ''),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
-              return NodeData(connector: connector, node: node, nodeId: nodeId);
+              return NodeData(
+                  connector: connector, node: node, nodeId: _nodeId);
             } else {
               return const LinearProgressIndicator();
             }
@@ -65,7 +68,7 @@ class NodeScreen extends StatelessWidget {
     } else {
       return Scaffold(
         appBar: AppBar(
-          title: Text(nodeId),
+          title: Text(_nodeId),
         ),
         body: const Center(child: Text('Node not found')),
       );
@@ -94,7 +97,7 @@ class NodeData extends StatelessWidget {
             child: ListView(
               shrinkWrap: true,
               padding: const EdgeInsets.all(8),
-              children: listDataObjects(
+              children: _listDataObjects(
                 context,
                 connector,
                 node,
@@ -110,7 +113,7 @@ class NodeData extends StatelessWidget {
   }
 }
 
-List<Widget> listDataObjects(
+List<Widget> _listDataObjects(
   BuildContext context,
   ConnectorModel connector,
   NodeModel node,
@@ -181,7 +184,7 @@ class DataGroup extends StatelessWidget {
           ),
           children: <Widget>[
             if (data != null)
-              ...listDataObjects(
+              ..._listDataObjects(
                 context,
                 connector,
                 node,

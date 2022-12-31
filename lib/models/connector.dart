@@ -16,7 +16,7 @@ class ConnectorModel extends ChangeNotifier {
   /// ThingSet client used by this connector
   final ThingSetClient _client;
 
-  bool connected = false;
+  bool _connected = false;
 
   get client => _client;
 
@@ -31,9 +31,9 @@ class ConnectorModel extends ChangeNotifier {
   // Update list of nodes connected to the client
   Future<void> updateNodes() async {
     // ToDo: place somewhere else
-    if (!connected) {
+    if (!_connected) {
       _client.connect();
-      connected = true;
+      _connected = true;
     }
 
     final resp = await _client.request('?//');

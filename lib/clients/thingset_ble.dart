@@ -6,26 +6,29 @@ import 'package:mutex/mutex.dart';
 
 import 'thingset.dart';
 
-Uuid uuidThingSetService = Uuid.parse('00000001-5a19-4887-9c6a-14ad27bfc06d');
-Uuid uuidThingSetRequest = Uuid.parse('00000002-5a19-4887-9c6a-14ad27bfc06d');
-Uuid uuidThingSetResponse = Uuid.parse('00000003-5a19-4887-9c6a-14ad27bfc06d');
+final Uuid uuidThingSetService =
+    Uuid.parse('00000001-5a19-4887-9c6a-14ad27bfc06d');
+final Uuid uuidThingSetRequest =
+    Uuid.parse('00000002-5a19-4887-9c6a-14ad27bfc06d');
+final Uuid uuidThingSetResponse =
+    Uuid.parse('00000003-5a19-4887-9c6a-14ad27bfc06d');
 
 class BleClient extends ThingSetClient {
-  final FlutterReactiveBle ble;
-  final DiscoveredDevice device;
-  final mutex = Mutex();
-  Stream? connectionStream;
-  StreamSubscription? connection;
+  final FlutterReactiveBle _ble;
+  final DiscoveredDevice _device;
+  final _mutex = Mutex();
+  Stream? _connectionStream;
+  StreamSubscription? _connection;
 
-  BleClient(this.ble, this.device) : super('Bluetooth');
+  BleClient(this._ble, this._device) : super('Bluetooth');
 
   @override
   Future<void> connect() async {
     debugPrint('Trying to connect...');
 
     try {
-      connectionStream = ble.connectToAdvertisingDevice(
-        id: device.id,
+      _connectionStream = _ble.connectToAdvertisingDevice(
+        id: _device.id,
         prescanDuration: const Duration(seconds: 2),
         withServices: [uuidThingSetService],
         connectionTimeout: const Duration(seconds: 3),
@@ -35,7 +38,7 @@ class BleClient extends ThingSetClient {
     }
 
     try {
-      connection = connectionStream?.listen((event) {
+      _connection = _connectionStream?.listen((event) {
         var id = event.deviceId.toString();
         switch (event.connectionState) {
           case DeviceConnectionState.connecting:
@@ -61,7 +64,8 @@ class BleClient extends ThingSetClient {
   Future<ThingSetResponse> request(String msg) async {
     if (msg == '?//') {
       return ThingSetResponse(
-          ThingSetStatusCode.content(), '["${device.id.replaceAll(':', '')}"]');
+          ThingSetStatusCode.content(),
+          '["${_device.id.replaceAll(':', '')}"]');
     } else {
       // convert ThingSet request into request with relative path
       final matches = RegExp(reqRegExp).firstMatch(msg);
@@ -73,12 +77,12 @@ class BleClient extends ThingSetClient {
         if (chunks.length > 1) {
           String nodeId = chunks[1];
           String relPath = chunks.length > 2 ? chunks[2] : '';
-          if (nodeId == device.id.replaceAll(':', '')) {
-            await mutex.acquire();
+          if (nodeId == _device.id.replaceAll(':', '')) {
+            await _mutex.acquire();
             debugPrint('request: $type$relPath $data');
             // ToDo: send '$type$relPath $data'
             // ToDo: wait for response
-            mutex.release();
+            _mutex.release();
             // ToDo: return response
           }
         }

@@ -7,14 +7,14 @@ import 'package:permission_handler/permission_handler.dart';
 import '../clients/thingset_ble.dart';
 
 class BleScanner extends ChangeNotifier {
-  final FlutterReactiveBle ble;
-  final List<DiscoveredDevice> discoveredDevices = [];
-  Stream? scanStream;
-  StreamSubscription? scanStreamSubscription;
+  final FlutterReactiveBle _ble;
+  final List<DiscoveredDevice> _discoveredDevices = [];
+  Stream? _scanStream;
+  StreamSubscription? _scanStreamSubscription;
 
-  BleScanner(this.ble);
+  BleScanner(this._ble);
 
-  List<DiscoveredDevice> get devices => discoveredDevices;
+  List<DiscoveredDevice> get devices => _discoveredDevices;
 
   Future<void> startScanning() async {
     Map<Permission, PermissionStatus> statuses = await [
@@ -23,18 +23,18 @@ class BleScanner extends ChangeNotifier {
       Permission.locationWhenInUse,
     ].request();
 
-    scanStream = ble.scanForDevices(
+    _scanStream = _ble.scanForDevices(
       withServices: [uuidThingSetService],
       scanMode: ScanMode.lowLatency,
       requireLocationServicesEnabled: false,
     );
 
-    scanStreamSubscription = scanStream!.listen(
+    _scanStreamSubscription = _scanStream!.listen(
       (device) {
-        if (discoveredDevices
+        if (_discoveredDevices
             .every((discovered) => discovered.id != device.id)) {
           debugPrint("New ThingSet node found: ${device.toString()}");
-          discoveredDevices.add(device);
+          _discoveredDevices.add(device);
           notifyListeners();
         }
       },
@@ -46,10 +46,10 @@ class BleScanner extends ChangeNotifier {
   }
 
   void stopScanning() async {
-    await scanStreamSubscription?.cancel();
+    await _scanStreamSubscription?.cancel();
   }
 
   void clear() {
-    discoveredDevices.clear();
+    _discoveredDevices.clear();
   }
 }

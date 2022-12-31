@@ -10,7 +10,7 @@ import '../models/ble_scanner.dart';
 import '../models/connector.dart';
 
 class HomeScreen extends StatelessWidget {
-  final String title = 'ThingSet App';
+  final String _title = 'ThingSet App';
 
   const HomeScreen({super.key});
 
@@ -19,7 +19,7 @@ class HomeScreen extends StatelessWidget {
     return Consumer<AppModel>(
       builder: (context, appModel, child) => Scaffold(
         appBar: AppBar(
-          title: Center(child: Text(title)),
+          title: Center(child: Text(_title)),
         ),
         body: Center(
           child: ListView.builder(
@@ -36,7 +36,7 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: const Color(0xFFF0F0F0),
         floatingActionButton: (Platform.isIOS || Platform.isAndroid)
             ? FloatingActionButton(
-                onPressed: () => bleScanDialog(context, appModel),
+                onPressed: () => _bleScanDialog(context, appModel),
                 backgroundColor: Theme.of(context).colorScheme.secondary,
                 child: const Icon(Icons.add),
               )
@@ -45,7 +45,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Future<void> bleScanDialog(BuildContext context, AppModel appModel) {
+  Future<void> _bleScanDialog(BuildContext context, AppModel appModel) {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -117,16 +117,18 @@ class HomeScreen extends StatelessWidget {
 }
 
 class NodesList extends StatelessWidget {
-  final String connectorName;
-  final ConnectorModel connector;
+  final String _connectorName;
+  final ConnectorModel _connector;
 
   const NodesList(
-      {super.key, required this.connectorName, required this.connector});
+      {super.key, required connectorName, required connector})
+      : _connectorName = connectorName,
+        _connector = connector;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<ConnectorModel>(
-      create: (_) => connector,
+      create: (_) => _connector,
       child: Consumer<ConnectorModel>(
         builder: (_, model, __) {
           return FutureBuilder<void>(
@@ -137,11 +139,18 @@ class NodesList extends StatelessWidget {
                   shrinkWrap: true,
                   padding: const EdgeInsets.all(8),
                   itemCount: model.nodeIds.length,
-                  itemBuilder: (BuildContext context, int index) => NodeItem(
-                    connectorName: connectorName,
-                    connector: model,
-                    nodeId: model.nodeIds[index],
-                  ),
+                  itemBuilder: (context, index) {
+                    var nodeId = model.nodeIds[index];
+                    return Card(
+                      child: ListTile(
+                        title: Text(model.nodes[nodeId].name),
+                        subtitle: Text(nodeId),
+                        onTap: () {
+                          context.go('/$_connectorName/$nodeId');
+                        },
+                      ),
+                    );
+                  },
                   separatorBuilder: (BuildContext context, int index) =>
                       const Divider(),
                 );
@@ -150,32 +159,6 @@ class NodesList extends StatelessWidget {
               }
             },
           );
-        },
-      ),
-    );
-  }
-}
-
-class NodeItem extends StatelessWidget {
-  final String connectorName;
-  final ConnectorModel connector;
-  final String nodeId;
-
-  const NodeItem({
-    super.key,
-    required this.connectorName,
-    required this.connector,
-    required this.nodeId,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        title: Text(connector.nodes[nodeId].name),
-        subtitle: Text(nodeId),
-        onTap: () {
-          context.go('/$connectorName/$nodeId');
         },
       ),
     );
