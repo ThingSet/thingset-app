@@ -34,12 +34,13 @@ class AppModel extends ChangeNotifier {
     }
   }
 
-  void addConnector(String name, ConnectorModel model) {
+  Future<void> addConnector(String name, ConnectorModel model) async {
+    await model.connect();
     _connectors[name] = model;
     notifyListeners();
   }
 
-  void deleteConnector(String name) async {
+  Future<void> deleteConnector(String name) async {
     await _connectors[name]?.disconnect();
     _connectors.remove(name);
     notifyListeners();

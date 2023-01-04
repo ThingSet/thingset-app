@@ -59,6 +59,7 @@ class BleClient extends ThingSetClient {
     }
 
     debugPrint('Trying to connect...');
+    final completer = Completer<void>();
 
     try {
       _connectionStream = _ble.connectToAdvertisingDevice(
@@ -69,6 +70,7 @@ class BleClient extends ThingSetClient {
       );
     } catch (error) {
       debugPrint('connect error: ${error.toString()}');
+      completer.completeError(error);
     }
 
     try {
@@ -100,6 +102,7 @@ class BleClient extends ThingSetClient {
                 deviceId: event.deviceId);
 
             _connected = true;
+            completer.complete();
             break;
           case DeviceConnectionState.disconnecting:
             debugPrint('Disconnecting from $id');
@@ -110,17 +113,23 @@ class BleClient extends ThingSetClient {
             break;
         }
       });
+
+      await completer.future;
     } catch (error) {
       debugPrint('listen error: ${error.toString()}');
+      completer.completeError(error);
     }
   }
 
   @override
   Future<ThingSetResponse> request(String msg) async {
-    if (msg == '?//') {
-      return ThingSetResponse(ThingSetStatusCode.content(),
-          '["${_device.id.replaceAll(':', '')}"]');
-    } else if (_connected) {
+    if (_connected) {
+      if (msg == '?//') {
+        // only a single node can be connected at the moment, so we hack the
+        // request to get the list of nodes
+        msg = '?/unknown ["cNodeID"]';
+      }
+
       // convert ThingSet request into request with relative path
       final matches = RegExp(reqRegExp).firstMatch(msg);
       if (matches != null && matches.groupCount >= 3) {
@@ -129,41 +138,41 @@ class BleClient extends ThingSetClient {
         final data = matches[3]!;
         final chunks = absPath.split('/');
         if (chunks.length > 1) {
-          String nodeId = chunks[1];
+          // nodeId in chunks[1] currently ignored
           String relPath = chunks.length > 2 ? chunks[2] : '';
-          if (nodeId == _device.id.replaceAll(':', '')) {
-            await _mutex.acquire();
-            debugPrint('request: $type$relPath $data');
 
-            // assuming that requests are small enough to fit into one message
-            List<int> encodedData = [
-              slipEnd,
-              ...utf8.encode('$type$relPath $data'),
-              slipEnd
-            ];
-            await _ble.writeCharacteristicWithoutResponse(_reqCharacteristic!,
-                value: encodedData);
+          await _mutex.acquire();
+          debugPrint('request: $type$relPath $data');
 
-            try {
-              await for (final value
-                  in _receiver.stream.timeout(const Duration(seconds: 2))) {
-                // ToDo: Check if receiver stream has to be cancelled here
-                final matches = RegExp(respRegExp).firstMatch(value.toString());
-                if (matches != null && matches.groupCount == 2) {
-                  final status = matches[1];
-                  final jsonData = matches[2]!;
-                  _mutex.release();
-                  return ThingSetResponse(
-                      ThingSetStatusCode.fromString(status!), jsonData);
-                }
+          // assuming that requests are small enough to fit into one message
+          List<int> encodedData = [
+            slipEnd,
+            ...utf8.encode('$type$relPath $data'),
+            slipEnd
+          ];
+          await _ble.writeCharacteristicWithoutResponse(_reqCharacteristic!,
+              value: encodedData);
+
+          try {
+            await for (final value
+                in _receiver.stream.timeout(const Duration(seconds: 2))) {
+              // ToDo: Check if receiver stream has to be cancelled here
+              final matches = RegExp(respRegExp).firstMatch(value.toString());
+              if (matches != null && matches.groupCount == 2) {
+                final status = matches[1];
+                final jsonData = matches[2]!;
+                _mutex.release();
+                return ThingSetResponse(
+                    ThingSetStatusCode.fromString(status!), jsonData);
               }
-            } catch (error) {
-              _mutex.release();
-              return ThingSetResponse(
-                  ThingSetStatusCode.serviceUnavailable(), '');
             }
+          } catch (error) {
             _mutex.release();
+            return ThingSetResponse(
+                ThingSetStatusCode.serviceUnavailable(), '');
           }
+          _mutex.release();
+
         }
       }
     }

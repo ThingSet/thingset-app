@@ -115,15 +115,19 @@ class HomeScreen extends StatelessWidget {
                       return ListTile(
                         title: Text(bleScanner.devices[index].name),
                         subtitle: Text(bleScanner.devices[index].id),
-                        onTap: () {
+                        onTap: () async {
                           bleScanner.stopScanning();
+                          Navigator.of(context).pop();
                           var bleDevice = bleScanner.devices[index];
                           var bleClient = BleClient(appModel.ble!, bleDevice);
                           String connectorName =
                               'ble_${bleDevice.id.replaceAll(':', '')}';
-                          appModel.addConnector(
-                              connectorName, ConnectorModel(bleClient));
-                          Navigator.of(context).pop();
+                          await appModel
+                              .addConnector(
+                                  connectorName, ConnectorModel(bleClient))
+                              .timeout(const Duration(seconds: 3),
+                                  onTimeout: () async => await appModel
+                                      .deleteConnector(connectorName));
                         },
                       );
                     },

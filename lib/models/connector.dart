@@ -94,6 +94,10 @@ class ConnectorModel extends ChangeNotifier {
     }
   }
 
+  Future<void> connect() async {
+    await _client.connect();
+  }
+
   Future<void> disconnect() async {
     await _client.disconnect();
   }
