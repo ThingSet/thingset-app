@@ -32,6 +32,7 @@ class BleClient extends ThingSetClient {
   bool _connected = false;
   String _response = '';
   final _receiver = StreamController<String>.broadcast();
+  int _mtu = 20;
 
   BleClient(this._ble, this._device) : super('Bluetooth');
 
@@ -115,6 +116,8 @@ class BleClient extends ThingSetClient {
       });
 
       await completer.future;
+
+      _mtu = await _ble.requestMtu(deviceId: _device.id, mtu: 250);
     } catch (error) {
       debugPrint('listen error: ${error.toString()}');
       completer.completeError(error);
@@ -139,19 +142,22 @@ class BleClient extends ThingSetClient {
         final chunks = absPath.split('/');
         if (chunks.length > 1) {
           // nodeId in chunks[1] currently ignored
-          String relPath = chunks.length > 2 ? chunks[2] : '';
+          String relPath = chunks.length > 2 ? chunks.sublist(2).join('/') : '';
 
           await _mutex.acquire();
           debugPrint('request: $type$relPath $data');
 
-          // assuming that requests are small enough to fit into one message
           List<int> encodedData = [
             slipEnd,
             ...utf8.encode('$type$relPath $data'),
             slipEnd
           ];
-          await _ble.writeCharacteristicWithoutResponse(_reqCharacteristic!,
-              value: encodedData);
+          for (var i = 0; i < encodedData.length; i += _mtu) {
+            var end =
+                (i + _mtu < encodedData.length) ? i + _mtu : encodedData.length;
+            await _ble.writeCharacteristicWithoutResponse(_reqCharacteristic!,
+                value: encodedData.sublist(i, end));
+          }
 
           try {
             await for (final value
@@ -172,7 +178,6 @@ class BleClient extends ThingSetClient {
                 ThingSetStatusCode.serviceUnavailable(), '');
           }
           _mutex.release();
-
         }
       }
     }
