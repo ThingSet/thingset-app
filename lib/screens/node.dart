@@ -10,8 +10,7 @@ class NodeScreen extends StatelessWidget {
   final String _connectorName;
   final String _nodeId;
 
-  const NodeScreen(
-      {super.key, required connectorName, required nodeId})
+  const NodeScreen({super.key, required connectorName, required nodeId})
       : _connectorName = connectorName,
         _nodeId = nodeId;
 
@@ -46,8 +45,9 @@ class NodeScreen extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.refresh),
               tooltip: 'Reload data from device',
-              onPressed: () {
-                connector.pull(_nodeId, '');
+              onPressed: () async {
+                node.clearReported();
+                await connector.pull(_nodeId, '');
               },
             ),
           ],
@@ -188,15 +188,10 @@ class DataGroup extends StatelessWidget {
                 path,
                 data,
               )
-            else
-              FutureBuilder<void>(
-                  future: connector.pull(nodeId, path),
-                  builder: (context, snapshot) =>
-                      const LinearProgressIndicator()),
           ],
-          onExpansionChanged: (value) {
+          onExpansionChanged: (value) async {
             if (value == true) {
-              connector.pull(nodeId, path);
+              await connector.pull(nodeId, path);
             }
           },
         ),

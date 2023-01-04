@@ -41,4 +41,14 @@ class NodeModel extends ChangeNotifier {
       }
     }
   }
+
+  void clearReported() {
+    _reported.clear();
+    notifyListeners();
+  }
+
+  void clearDesired() {
+    _desired.clear();
+    notifyListeners();
+  }
 }
