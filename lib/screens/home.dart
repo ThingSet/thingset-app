@@ -26,9 +26,53 @@ class HomeScreen extends StatelessWidget {
             itemCount: appModel.connectors.length,
             itemBuilder: (BuildContext context, int index) {
               String connectorName = appModel.connectors.keys.elementAt(index);
-              return NodesList(
-                connectorName: connectorName,
-                connector: appModel.connectors[connectorName],
+              return Card(
+                child: Column(children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          child: Icon(
+                            _connectorIcon(
+                                appModel.connectors[connectorName].clientType),
+                            color: Colors.grey,
+                          ),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              appModel.connectors[connectorName].clientType,
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            Text(
+                              appModel.connectors[connectorName].clientId,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        )
+                      ]),
+                      IconButton(
+                        onPressed: () {
+                          appModel.deleteConnector(connectorName);
+                        },
+                        icon: const Icon(
+                          Icons.delete,
+                          color: Colors.grey,
+                        ),
+                      )
+                    ],
+                  ),
+                  NodesList(
+                    connectorName: connectorName,
+                    connector: appModel.connectors[connectorName],
+                  ),
+                ]),
               );
             },
           ),
@@ -43,6 +87,10 @@ class HomeScreen extends StatelessWidget {
             : null,
       ),
     );
+  }
+
+  IconData _connectorIcon(String clientType) {
+    return clientType == "Bluetooth" ? Icons.bluetooth : Icons.cloud_outlined;
   }
 
   Future<void> _bleScanDialog(BuildContext context, AppModel appModel) {
@@ -120,8 +168,7 @@ class NodesList extends StatelessWidget {
   final String _connectorName;
   final ConnectorModel _connector;
 
-  const NodesList(
-      {super.key, required connectorName, required connector})
+  const NodesList({super.key, required connectorName, required connector})
       : _connectorName = connectorName,
         _connector = connector;
 
@@ -141,14 +188,12 @@ class NodesList extends StatelessWidget {
                   itemCount: model.nodeIds.length,
                   itemBuilder: (context, index) {
                     var nodeId = model.nodeIds[index];
-                    return Card(
-                      child: ListTile(
-                        title: Text(model.nodes[nodeId].name),
-                        subtitle: Text(nodeId),
-                        onTap: () {
-                          context.go('/$_connectorName/$nodeId');
-                        },
-                      ),
+                    return ListTile(
+                      title: Text(model.nodes[nodeId].name),
+                      subtitle: Text(nodeId),
+                      onTap: () {
+                        context.go('/$_connectorName/$nodeId');
+                      },
                     );
                   },
                   separatorBuilder: (BuildContext context, int index) =>

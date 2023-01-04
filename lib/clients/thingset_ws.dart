@@ -12,6 +12,9 @@ class WebSocketClient extends ThingSetClient {
   WebSocketClient(this._baseUrl) : super('WebSocket');
 
   @override
+  get id => _baseUrl;
+
+  @override
   Future<void> connect() async {
     final wsChannel = WebSocketChannel.connect(Uri.parse(_baseUrl));
     _receiver = wsChannel.stream.asBroadcastStream();

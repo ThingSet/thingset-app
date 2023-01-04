@@ -24,6 +24,10 @@ class ConnectorModel extends ChangeNotifier {
 
   get nodes => _nodes;
 
+  get clientId => _client.id;
+
+  get clientType => _client.type;
+
   NodeModel? node(String name) => _nodes[name];
 
   ConnectorModel(this._client);
@@ -88,5 +92,9 @@ class ConnectorModel extends ChangeNotifier {
         _nodes[nodeId]?.mergeReported(path, jsonData);
       }
     }
+  }
+
+  Future<void> disconnect() async {
+    await _client.disconnect();
   }
 }

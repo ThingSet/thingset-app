@@ -35,6 +35,9 @@ class BleClient extends ThingSetClient {
 
   BleClient(this._ble, this._device) : super('Bluetooth');
 
+  @override
+  get id => _device.id.toString();
+
   void _processReceivedData(List<int> data) {
     for (final byte in data) {
       if (byte == slipEnd) {
@@ -51,6 +54,10 @@ class BleClient extends ThingSetClient {
 
   @override
   Future<void> connect() async {
+    if (_connected) {
+      return;
+    }
+
     debugPrint('Trying to connect...');
 
     try {
@@ -73,7 +80,6 @@ class BleClient extends ThingSetClient {
             break;
           case DeviceConnectionState.connected:
             debugPrint('Connected to $id');
-            _connected = true;
 
             _respCharacteristic = QualifiedCharacteristic(
                 serviceId: uuidThingSetService,
@@ -93,6 +99,7 @@ class BleClient extends ThingSetClient {
                 characteristicId: uuidThingSetRequest,
                 deviceId: event.deviceId);
 
+            _connected = true;
             break;
           case DeviceConnectionState.disconnecting:
             debugPrint('Disconnecting from $id');
@@ -165,6 +172,7 @@ class BleClient extends ThingSetClient {
 
   @override
   Future<void> disconnect() async {
-    throw Exception('Client not connected');
+    await _connection?.cancel();
+    _connected = false;
   }
 }

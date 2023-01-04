@@ -38,4 +38,10 @@ class AppModel extends ChangeNotifier {
     _connectors[name] = model;
     notifyListeners();
   }
+
+  void deleteConnector(String name) async {
+    await _connectors[name]?.disconnect();
+    _connectors.remove(name);
+    notifyListeners();
+  }
 }

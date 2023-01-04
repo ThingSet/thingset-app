@@ -37,6 +37,8 @@ abstract class ThingSetClient {
 
   get type => _type;
 
+  String get id;
+
   ThingSetClient(this._type);
 
   // Establish connection with the remote node
