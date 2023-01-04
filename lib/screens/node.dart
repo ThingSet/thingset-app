@@ -92,20 +92,16 @@ class NodeData extends StatelessWidget {
     return ChangeNotifierProvider<NodeModel>.value(
       value: node,
       child: Consumer<NodeModel>(
-        builder: (_, model, __) => SingleChildScrollView(
-          child: Center(
-            child: ListView(
-              shrinkWrap: true,
-              padding: const EdgeInsets.all(8),
-              children: _listDataObjects(
-                context,
-                connector,
-                node,
-                nodeId,
-                '',
-                node.reported,
-              ),
-            ),
+        builder: (_, model, __) => ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.all(8),
+          children: _listDataObjects(
+            context,
+            connector,
+            node,
+            nodeId,
+            '',
+            node.reported,
           ),
         ),
       ),
