@@ -17,12 +17,6 @@ class AppModel extends ChangeNotifier {
   /// Bluetooth scanner (only used in mobile apps)
   BleScanner? scanner;
 
-  get connectorNames => _connectors.keys.toList();
-
-  get connectors => _connectors;
-
-  ConnectorModel? connector(String name) => _connectors[name];
-
   AppModel() {
     // initialize available clients and create a connector for them
     _connectors['ws'] =
@@ -33,6 +27,12 @@ class AppModel extends ChangeNotifier {
       scanner = BleScanner(ble!);
     }
   }
+
+  List<String> get connectorNames => _connectors.keys.toList();
+
+  Map<String, ConnectorModel> get connectors => _connectors;
+
+  ConnectorModel? connector(String name) => _connectors[name];
 
   Future<void> addConnector(String name, ConnectorModel model) async {
     await model.connect();

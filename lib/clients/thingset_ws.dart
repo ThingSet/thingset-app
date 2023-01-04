@@ -12,7 +12,7 @@ class WebSocketClient extends ThingSetClient {
   WebSocketClient(this._baseUrl) : super('WebSocket');
 
   @override
-  get id => _baseUrl;
+  String get id => _baseUrl;
 
   @override
   Future<void> connect() async {
@@ -50,6 +50,6 @@ class WebSocketClient extends ThingSetClient {
 
   @override
   Future<void> disconnect() async {
-    _sender?.close();
+    await _sender?.close();
   }
 }

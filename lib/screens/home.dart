@@ -26,6 +26,7 @@ class HomeScreen extends StatelessWidget {
             itemCount: appModel.connectors.length,
             itemBuilder: (BuildContext context, int index) {
               String connectorName = appModel.connectors.keys.elementAt(index);
+              ConnectorModel connector = appModel.connectors[connectorName]!;
               return Card(
                 child: Column(children: [
                   Row(
@@ -35,8 +36,7 @@ class HomeScreen extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 15),
                           child: Icon(
-                            _connectorIcon(
-                                appModel.connectors[connectorName].clientType),
+                            _connectorIcon(connector.clientType),
                             color: Colors.grey,
                           ),
                         ),
@@ -44,11 +44,11 @@ class HomeScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              appModel.connectors[connectorName].clientType,
+                              connector.clientType,
                               style: const TextStyle(fontSize: 14),
                             ),
                             Text(
-                              appModel.connectors[connectorName].clientId,
+                              connector.clientId,
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey,
@@ -70,7 +70,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   NodesList(
                     connectorName: connectorName,
-                    connector: appModel.connectors[connectorName],
+                    connector: connector,
                   ),
                 ]),
               );
@@ -90,7 +90,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   IconData _connectorIcon(String clientType) {
-    return clientType == "Bluetooth" ? Icons.bluetooth : Icons.cloud_outlined;
+    return clientType == 'Bluetooth' ? Icons.bluetooth : Icons.cloud_outlined;
   }
 
   Future<void> _bleScanDialog(BuildContext context, AppModel appModel) {
@@ -193,7 +193,7 @@ class NodesList extends StatelessWidget {
                   itemBuilder: (context, index) {
                     var nodeId = model.nodeIds[index];
                     return ListTile(
-                      title: Text(model.nodes[nodeId].name),
+                      title: Text(model.nodes[nodeId]!.name),
                       subtitle: Text(nodeId),
                       onTap: () {
                         context.go('/$_connectorName/$nodeId');

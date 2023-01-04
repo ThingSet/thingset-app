@@ -18,25 +18,25 @@ class ConnectorModel extends ChangeNotifier {
 
   bool _connected = false;
 
-  get client => _client;
+  ConnectorModel(this._client);
 
-  get nodeIds => _nodes.keys.toList();
+  ThingSetClient get client => _client;
 
-  get nodes => _nodes;
+  List<String> get nodeIds => _nodes.keys.toList();
 
-  get clientId => _client.id;
+  Map<String, NodeModel> get nodes => _nodes;
 
-  get clientType => _client.type;
+  String get clientId => _client.id;
+
+  String get clientType => _client.type;
 
   NodeModel? node(String name) => _nodes[name];
-
-  ConnectorModel(this._client);
 
   // Update list of nodes connected to the client
   Future<void> updateNodes() async {
     // ToDo: place somewhere else
     if (!_connected) {
-      _client.connect();
+      await _client.connect();
       _connected = true;
     }
 

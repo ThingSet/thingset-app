@@ -36,7 +36,7 @@ class BleClient extends ThingSetClient {
   BleClient(this._ble, this._device) : super('Bluetooth');
 
   @override
-  get id => _device.id.toString();
+  String get id => _device.id.toString();
 
   void _processReceivedData(List<int> data) {
     for (final byte in data) {

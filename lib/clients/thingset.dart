@@ -35,11 +35,11 @@ class ThingSetResponse {
 abstract class ThingSetClient {
   final String _type;
 
-  get type => _type;
+  ThingSetClient(this._type);
+
+  String get type => _type;
 
   String get id;
-
-  ThingSetClient(this._type);
 
   // Establish connection with the remote node
   Future<void> connect();

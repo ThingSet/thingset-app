@@ -130,7 +130,7 @@ List<Widget> _listDataObjects(
           path: path.isEmpty ? item : '$path/$item',
           data: data[item],
         )
-      else if (item != "cNodeID" &&
+      else if (item != 'cNodeID' &&
           item[0] != 'a' &&
           item[0] != 'e' &&
           item[0] != 'm')
@@ -252,7 +252,7 @@ class DataItem extends StatelessWidget {
         paramsWidget = ConstrainedBox(
           constraints:
               BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.4),
-          child: Text("$data"),
+          child: Text('$data'),
         );
       }
       return ListTile(
@@ -285,7 +285,7 @@ class DataItem extends StatelessWidget {
         }
       } else {
         valueWidget = Text(
-          "$data $unit",
+          '$data $unit',
           softWrap: true,
         );
       }

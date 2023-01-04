@@ -17,7 +17,7 @@ class BleScanner extends ChangeNotifier {
   List<DiscoveredDevice> get devices => _discoveredDevices;
 
   Future<void> startScanning() async {
-    Map<Permission, PermissionStatus> statuses = await [
+    await [
       Permission.bluetoothScan,
       Permission.bluetoothConnect,
       Permission.locationWhenInUse,
@@ -33,13 +33,13 @@ class BleScanner extends ChangeNotifier {
       (device) {
         if (_discoveredDevices
             .every((discovered) => discovered.id != device.id)) {
-          debugPrint("New ThingSet node found: ${device.toString()}");
+          debugPrint('New ThingSet node found: ${device.toString()}');
           _discoveredDevices.add(device);
           notifyListeners();
         }
       },
       onError: (err) {
-        debugPrint("BLE error: $err");
+        debugPrint('BLE error: $err');
         // ToDo: Handle error.
       },
     );

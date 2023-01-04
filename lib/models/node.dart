@@ -5,9 +5,9 @@ class NodeModel extends ChangeNotifier {
   final Map<String, dynamic> _desired = {};
   final Map<String, dynamic> _reported = {};
 
-  get desired => _desired;
+  Map<String, dynamic> get desired => _desired;
 
-  get reported => _reported;
+  Map<String, dynamic> get reported => _reported;
 
   void mergeReported(String path, dynamic jsonData) {
     Map<String, dynamic> obj = _reported;
