@@ -1,5 +1,5 @@
 const reqRegExp = r'([?=+\-!])([^ ]*) *(.*)';
-const respRegExp = r':([0-9A-F]*)[^\.]*\. (.*)';
+const respRegExp = r':([0-9A-F]*)[^\.]*\. ?(.*)';
 
 class ThingSetStatusCode {
   final int _status;
