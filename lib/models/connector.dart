@@ -66,7 +66,15 @@ class ConnectorModel extends ChangeNotifier {
 
   /// Update data in the node based on desired state
   Future<void> push(String nodeId, String path) async {
-    throw Exception('Yet to be implemented');
+    final data = _nodes[nodeId]?.getDesired(path);
+    final dataStr = jsonEncode(data);
+    final reqString =
+        path.isEmpty ? '=/$nodeId $dataStr' : '=/$nodeId/$path $dataStr';
+    final resp = await _client.request(reqString);
+    if (resp.status.isChanged()) {
+      _nodes[nodeId]?.clearDesired(path);
+      _nodes[nodeId]?.mergeReported(path, data);
+    }
   }
 
   /// Update data in the node based on desired state

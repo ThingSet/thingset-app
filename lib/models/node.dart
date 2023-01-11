@@ -9,6 +9,20 @@ class NodeModel extends ChangeNotifier {
 
   Map<String, dynamic> get reported => _reported;
 
+  bool hasDesiredChanged(String path) {
+    Map<String, dynamic> obj = _desired;
+    if (path.isNotEmpty) {
+      for (final chunk in path.split('/')) {
+        if (obj.containsKey(chunk) && obj[chunk].isNotEmpty) {
+          obj = obj[chunk];
+        } else {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   void mergeReported(String path, dynamic jsonData) {
     Map<String, dynamic> obj = _reported;
     if (path.isNotEmpty) {
@@ -40,15 +54,52 @@ class NodeModel extends ChangeNotifier {
         }
       }
     }
-  }
-
-  void clearReported() {
-    _reported.clear();
     notifyListeners();
   }
 
-  void clearDesired() {
-    _desired.clear();
+  Map<String, dynamic> getDesired(String path) {
+    Map<String, dynamic> obj = _desired;
+    if (path.isNotEmpty) {
+      for (final chunk in path.split('/')) {
+        if (obj.containsKey(chunk)) {
+          obj = obj[chunk];
+        } else {
+          return {};
+        }
+      }
+    }
+    return obj;
+  }
+
+  void clearReported(String path) {
+    Map<String, dynamic> obj = _reported;
+    if (path.isNotEmpty) {
+      for (final chunk in path.split('/')) {
+        if (obj.containsKey(chunk)) {
+          obj = obj[chunk];
+        } else {
+          // the path is already empty
+          return;
+        }
+      }
+    }
+    obj.clear();
+    notifyListeners();
+  }
+
+  void clearDesired(String path) {
+    Map<String, dynamic> obj = _desired;
+    if (path.isNotEmpty) {
+      for (final chunk in path.split('/')) {
+        if (obj.containsKey(chunk)) {
+          obj = obj[chunk];
+        } else {
+          // the path is already empty
+          return;
+        }
+      }
+    }
+    obj.clear();
     notifyListeners();
   }
 }

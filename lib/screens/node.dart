@@ -23,34 +23,25 @@ class NodeScreen extends StatelessWidget {
       return Scaffold(
         appBar: AppBar(
           title: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  node.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18.0,
-                  ),
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                node.name,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18.0,
                 ),
-                Text(
-                  _nodeId,
-                  style: const TextStyle(
-                    color: Color.fromARGB(255, 179, 179, 179),
-                    fontSize: 12.0,
-                  ),
-                )
-              ]),
-          actions: <Widget>[
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              tooltip: 'Reload data from device',
-              onPressed: () async {
-                node.clearReported();
-                await connector.pull(_nodeId, '');
-              },
-            ),
-          ],
+              ),
+              Text(
+                _nodeId,
+                style: const TextStyle(
+                  color: Color.fromARGB(255, 179, 179, 179),
+                  fontSize: 12.0,
+                ),
+              ),
+            ],
+          ),
         ),
         body: FutureBuilder<void>(
           future: connector.pull(_nodeId, ''),
@@ -163,12 +154,41 @@ class DataGroup extends StatelessWidget {
     required this.data,
   });
 
+  Widget? _icons() {
+    return SizedBox(
+      width: 100.0,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          if (node.hasDesiredChanged(path))
+            IconButton(
+              icon: const Icon(Icons.save),
+              onPressed: () async {
+                await connector.push(nodeId, path);
+              },
+            ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Reload data from device',
+            onPressed: () async {
+              node.clearReported(path);
+              node.clearDesired(path);
+              await connector.pull(nodeId, path);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: Card(
         child: ExpansionTile(
+          trailing: _icons(),
+          controlAffinity: ListTileControlAffinity.leading,
           title: Padding(
             padding: const EdgeInsets.all(10),
             child: Text(
@@ -287,6 +307,7 @@ class DataItem extends StatelessWidget {
         valueWidget = Text(
           '$data $unit',
           softWrap: true,
+          style: const TextStyle(fontSize: 16),
         );
       }
       return ListTile(
