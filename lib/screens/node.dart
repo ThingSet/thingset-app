@@ -122,6 +122,7 @@ List<Widget> _listDataObjects(
           data: data[item],
         )
       else if (item != 'cNodeID' &&
+          item != 'cMetadataURL' &&
           item[0] != 'a' &&
           item[0] != 'e' &&
           item[0] != 'm')
