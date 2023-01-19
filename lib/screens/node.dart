@@ -254,7 +254,7 @@ class DataItem extends StatelessWidget {
 
     // parse unit
     var unit = chunks.length > 1
-        ? chunks[1] + (chunks.length > 2 ? '/$chunks[2]' : '')
+        ? chunks[1] + (chunks.length > 2 ? '/${chunks[2]}' : '')
         : '';
     if (unitFix.containsKey(unit)) {
       unit = unitFix[unit]!;
