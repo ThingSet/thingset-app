@@ -1,3 +1,6 @@
+// Copyright (c) Libre Solar Technologies GmbH
+// SPDX-License-Identifier: GPL-3.0-only
+
 const reqRegExp = r'([?=+\-!])([^ ]*) *(.*)';
 const respRegExp = r':([0-9A-F]*)[^\.]*\. ?(.*)';
 

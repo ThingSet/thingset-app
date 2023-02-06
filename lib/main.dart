@@ -1,3 +1,6 @@
+// Copyright (c) Libre Solar Technologies GmbH
+// SPDX-License-Identifier: GPL-3.0-only
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';

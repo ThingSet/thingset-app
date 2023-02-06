@@ -1,3 +1,6 @@
+// Copyright (c) Libre Solar Technologies GmbH
+// SPDX-License-Identifier: GPL-3.0-only
+
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:mutex/mutex.dart';
 

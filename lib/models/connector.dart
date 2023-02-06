@@ -1,3 +1,6 @@
+// Copyright (c) Libre Solar Technologies GmbH
+// SPDX-License-Identifier: GPL-3.0-only
+
 /// Classes and functions to handle connectors
 ///
 /// Initializes different types of clients and assigns them to nodes
