@@ -37,7 +37,7 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       Row(children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          padding: const EdgeInsets.all(15),
                           child: Icon(
                             _connectorIcon(connector.clientType),
                             color: Colors.grey,
@@ -93,7 +93,16 @@ class HomeScreen extends StatelessWidget {
   }
 
   IconData _connectorIcon(String clientType) {
-    return clientType == 'Bluetooth' ? Icons.bluetooth : Icons.cloud_outlined;
+    switch (clientType) {
+      case 'Bluetooth':
+        return Icons.bluetooth;
+      case 'Serial':
+        return Icons.terminal;
+      case 'WebSocket':
+        return Icons.cloud_outlined;
+      default:
+        return Icons.circle;
+    }
   }
 
   Future<void> _bleScanDialog(BuildContext context, AppModel appModel) {
@@ -191,7 +200,7 @@ class NodesList extends StatelessWidget {
               if (snapshot.connectionState == ConnectionState.done) {
                 return ListView.separated(
                   shrinkWrap: true,
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(5),
                   itemCount: model.nodeIds.length,
                   itemBuilder: (context, index) {
                     var nodeId = model.nodeIds[index];

@@ -8,6 +8,7 @@ import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
 import 'connector.dart';
 import 'ble_scanner.dart';
+import '../clients/thingset_serial.dart';
 import '../clients/thingset_ws.dart';
 
 class AppModel extends ChangeNotifier {
@@ -24,6 +25,8 @@ class AppModel extends ChangeNotifier {
     // initialize available clients and create a connector for them
     _connectors['ws'] =
         ConnectorModel(WebSocketClient('ws://127.0.0.1:8000/app'));
+
+    _connectors['serial'] = ConnectorModel(SerialClient('/dev/ttyUSB0'));
 
     if (Platform.isIOS || Platform.isAndroid) {
       ble = FlutterReactiveBle();
