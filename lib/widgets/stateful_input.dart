@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class StatefulSwitch extends StatefulWidget {
   final bool value;
@@ -75,7 +76,13 @@ class StatefulTextFieldState extends State<StatefulTextField> {
   Widget build(BuildContext context) {
     return TextField(
       onChanged: (value) {
-        widget.onChanged(value);
+        // maintain type of original data (default would be String)
+        var numValue = num.tryParse(value);
+        if (widget.value is num && numValue != null) {
+          widget.onChanged(numValue);
+        } else {
+          widget.onChanged(value);
+        }
       },
       textAlign: TextAlign.right,
       decoration: InputDecoration(
@@ -83,6 +90,11 @@ class StatefulTextFieldState extends State<StatefulTextField> {
         suffixText: widget.unit,
       ),
       controller: controller,
+      keyboardType:
+          widget.value is num ? TextInputType.number : TextInputType.text,
+      inputFormatters: [
+        if (widget.value is num) FilteringTextInputFormatter.digitsOnly
+      ],
     );
   }
 }
