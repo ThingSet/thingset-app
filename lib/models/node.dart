@@ -16,7 +16,9 @@ class NodeModel extends ChangeNotifier {
     Map<String, dynamic> obj = _desired;
     if (path.isNotEmpty) {
       for (final chunk in path.split('/')) {
-        if (obj.containsKey(chunk) && obj[chunk].isNotEmpty) {
+        if (obj.containsKey(chunk) &&
+            obj[chunk] is Map &&
+            obj[chunk].isNotEmpty) {
           obj = obj[chunk];
         } else {
           return false;
@@ -78,7 +80,9 @@ class NodeModel extends ChangeNotifier {
     Map<String, dynamic> obj = _reported;
     if (path.isNotEmpty) {
       for (final chunk in path.split('/')) {
-        if (obj.containsKey(chunk)) {
+        if (obj.containsKey(chunk) &&
+            obj[chunk] is Map &&
+            obj[chunk].isNotEmpty) {
           obj = obj[chunk];
         } else {
           // the path is already empty
@@ -94,7 +98,9 @@ class NodeModel extends ChangeNotifier {
     Map<String, dynamic> obj = _desired;
     if (path.isNotEmpty) {
       for (final chunk in path.split('/')) {
-        if (obj.containsKey(chunk)) {
+        if (obj.containsKey(chunk) &&
+            obj[chunk] is Map &&
+            obj[chunk].isNotEmpty) {
           obj = obj[chunk];
         } else {
           // the path is already empty
