@@ -44,6 +44,23 @@ abstract class ThingSetClient {
 
   String get id;
 
+  // convert ThingSet request into request with relative path
+  String? reqRelativePath(String reqAbsPath) {
+    final matches = RegExp(reqRegExp).firstMatch(reqAbsPath);
+    if (matches != null && matches.groupCount >= 3) {
+      final type = matches[1]!;
+      final absPath = matches[2]!;
+      final data = matches[3]!;
+      final chunks = absPath.split('/');
+      if (chunks.length > 1) {
+        // remove nodeId in chunks[1]
+        String relPath = chunks.length > 2 ? chunks.sublist(2).join('/') : '';
+        return '$type$relPath $data';
+      }
+    }
+    return null;
+  }
+
   // Establish connection with the remote node
   Future<void> connect();
   // Send a ThingSet request and await response

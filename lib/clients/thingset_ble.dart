@@ -133,56 +133,45 @@ class BleClient extends ThingSetClient {
       if (msg == '?/ null') {
         // only a single node can be connected at the moment, so we hack the
         // request to get the list of nodes
-        msg = '?/unknown ["cNodeID"]';
-      }
-
-      // convert ThingSet request into request with relative path
-      final matches = RegExp(reqRegExp).firstMatch(msg);
-      if (matches != null && matches.groupCount >= 3) {
-        final type = matches[1]!;
-        final absPath = matches[2]!;
-        final data = matches[3]!;
-        final chunks = absPath.split('/');
-        if (chunks.length > 1) {
-          // nodeId in chunks[1] currently ignored
-          String relPath = chunks.length > 2 ? chunks.sublist(2).join('/') : '';
-
-          await _mutex.acquire();
-          debugPrint('request: $type$relPath $data');
-
-          List<int> encodedData = [
-            slipEnd,
-            ...utf8.encode('$type$relPath $data'),
-            slipEnd
-          ];
-          for (var i = 0; i < encodedData.length; i += _mtu) {
-            var end =
-                (i + _mtu < encodedData.length) ? i + _mtu : encodedData.length;
-            await _ble.writeCharacteristicWithoutResponse(_reqCharacteristic!,
-                value: encodedData.sublist(i, end));
-          }
-
-          try {
-            await for (final value
-                in _receiver.stream.timeout(const Duration(seconds: 2))) {
-              // ToDo: Check if receiver stream has to be cancelled here
-              final matches = RegExp(respRegExp).firstMatch(value.toString());
-              if (matches != null && matches.groupCount == 2) {
-                final status = matches[1];
-                final jsonData = matches[2]!;
-                _mutex.release();
-                return ThingSetResponse(
-                    ThingSetStatusCode.fromString(status!), jsonData);
-              }
-            }
-          } catch (error) {
-            _mutex.release();
-            return ThingSetResponse(
-                ThingSetStatusCode.serviceUnavailable(), '');
-          }
-          _mutex.release();
+        msg = '? ["cNodeID"]';
+      } else {
+        var msgRel = reqRelativePath(msg);
+        if (msgRel != null) {
+          msg = msgRel;
+        } else {
+          return ThingSetResponse(ThingSetStatusCode.serviceUnavailable(), '');
         }
       }
+
+      debugPrint('request: $msg');
+      await _mutex.acquire();
+
+      List<int> encodedData = [slipEnd, ...utf8.encode(msg), slipEnd];
+      for (var i = 0; i < encodedData.length; i += _mtu) {
+        var end =
+            (i + _mtu < encodedData.length) ? i + _mtu : encodedData.length;
+        await _ble.writeCharacteristicWithoutResponse(_reqCharacteristic!,
+            value: encodedData.sublist(i, end));
+      }
+
+      try {
+        await for (final value
+            in _receiver.stream.timeout(const Duration(seconds: 2))) {
+          // ToDo: Check if receiver stream has to be cancelled here
+          final matches = RegExp(respRegExp).firstMatch(value.toString());
+          if (matches != null && matches.groupCount == 2) {
+            final status = matches[1];
+            final jsonData = matches[2]!;
+            _mutex.release();
+            return ThingSetResponse(
+                ThingSetStatusCode.fromString(status!), jsonData);
+          }
+        }
+      } catch (error) {
+        _mutex.release();
+        return ThingSetResponse(ThingSetStatusCode.serviceUnavailable(), '');
+      }
+      _mutex.release();
     }
     return ThingSetResponse(ThingSetStatusCode.serviceUnavailable(), '');
   }
