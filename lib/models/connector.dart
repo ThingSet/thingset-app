@@ -43,7 +43,7 @@ class ConnectorModel extends ChangeNotifier {
       _connected = true;
     }
 
-    final resp = await _client.request('?//');
+    final resp = await _client.request('?/ null');
     if (resp.status.isContent()) {
       for (final nodeId in jsonDecode(resp.data)) {
         if (_nodes[nodeId] == null && nodeId != '') {

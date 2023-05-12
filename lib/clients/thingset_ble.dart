@@ -130,7 +130,7 @@ class BleClient extends ThingSetClient {
   @override
   Future<ThingSetResponse> request(String msg) async {
     if (_connected) {
-      if (msg == '?//') {
+      if (msg == '?/ null') {
         // only a single node can be connected at the moment, so we hack the
         // request to get the list of nodes
         msg = '?/unknown ["cNodeID"]';
