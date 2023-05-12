@@ -25,7 +25,15 @@ class NodeModel extends ChangeNotifier {
         }
       }
     }
-    return true;
+
+    // only return true if an item (not a group) at this level has been changed
+    for (final item in obj.keys) {
+      if (obj[item] is! Map) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   void mergeReported(String path, dynamic jsonData) {
@@ -46,17 +54,16 @@ class NodeModel extends ChangeNotifier {
   void setDesired(String path, dynamic jsonData) {
     Map<String, dynamic> obj = _desired;
     if (path.isNotEmpty) {
-      for (final chunk in path.split('/')) {
-        if (chunk[0].toLowerCase() == chunk[0]) {
+      var chunks = path.split('/');
+      for (final chunk in chunks) {
+        if (chunk == chunks.last && chunk[0].toLowerCase() == chunk[0]) {
           obj[chunk] = jsonData;
           break;
         } else if (!obj.containsKey(chunk) || obj[chunk] == null) {
           Map<String, dynamic> newMap = {};
           obj[chunk] = newMap;
-          obj = obj[chunk];
-        } else {
-          obj = obj[chunk];
         }
+        obj = obj[chunk];
       }
     }
     notifyListeners();
