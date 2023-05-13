@@ -1,6 +1,7 @@
 // Copyright (c) Libre Solar Technologies GmbH
 // SPDX-License-Identifier: GPL-3.0-only
 
+import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:mutex/mutex.dart';
 
@@ -26,13 +27,15 @@ class WebSocketClient extends ThingSetClient {
 
   @override
   Future<ThingSetResponse> request(String msg) async {
-    if (_sender != null) {
+    if (_sender != null && _receiver != null) {
       await _mutex.acquire();
       _sender!.add(msg);
       try {
-        await for (final value
-            in _receiver!.timeout(const Duration(seconds: 3))) {
-          // ToDo: Check if receiver stream has to be cancelled here
+        var rxStream = _receiver!.timeout(
+          const Duration(seconds: 2),
+          onTimeout: (sink) => sink.close(), // close sink to stop for loop
+        );
+        await for (final value in rxStream) {
           final matches = RegExp(respRegExp).firstMatch(value.toString());
           if (matches != null && matches.groupCount == 2) {
             final status = matches[1];
@@ -43,8 +46,7 @@ class WebSocketClient extends ThingSetClient {
           }
         }
       } catch (error) {
-        _mutex.release();
-        return ThingSetResponse(ThingSetStatusCode.serviceUnavailable(), '');
+        debugPrint('WebSocket error: $error');
       }
       _mutex.release();
     }

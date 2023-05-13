@@ -155,9 +155,11 @@ class BleClient extends ThingSetClient {
       }
 
       try {
-        await for (final value
-            in _receiver.stream.timeout(const Duration(seconds: 2))) {
-          // ToDo: Check if receiver stream has to be cancelled here
+        var rxStream = _receiver.stream.timeout(
+          const Duration(seconds: 2),
+          onTimeout: (sink) => sink.close(), // close sink to stop for loop
+        );
+        await for (final value in rxStream) {
           final matches = RegExp(respRegExp).firstMatch(value.toString());
           if (matches != null && matches.groupCount == 2) {
             final status = matches[1];
@@ -168,8 +170,7 @@ class BleClient extends ThingSetClient {
           }
         }
       } catch (error) {
-        _mutex.release();
-        return ThingSetResponse(ThingSetStatusCode.serviceUnavailable(), '');
+        debugPrint('Bluetooth error: $error');
       }
       _mutex.release();
     }

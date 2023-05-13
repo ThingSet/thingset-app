@@ -69,10 +69,12 @@ class SerialClient extends ThingSetClient {
       debugPrint('request: $msg');
       _port!.write(Uint8List.fromList('$msg\n'.codeUnits));
       try {
-        await for (final response
-            in _receiver.stream.timeout(const Duration(seconds: 2))) {
+        var rxStream = _receiver.stream.timeout(
+          const Duration(seconds: 2),
+          onTimeout: (sink) => sink.close(), // close sink to stop for loop
+        );
+        await for (final response in rxStream) {
           debugPrint('response: $response');
-          // ToDo: Check if receiver stream has to be cancelled here
           final matches = RegExp(respRegExp).firstMatch(response.toString());
           if (matches != null && matches.groupCount == 2) {
             final status = matches[1];
@@ -83,8 +85,7 @@ class SerialClient extends ThingSetClient {
           }
         }
       } catch (error) {
-        _mutex.release();
-        return ThingSetResponse(ThingSetStatusCode.serviceUnavailable(), '');
+        debugPrint('Serial error: $error');
       }
       _mutex.release();
     }
