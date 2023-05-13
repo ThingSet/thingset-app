@@ -15,6 +15,7 @@ class SerialClient extends ThingSetClient {
   SerialPort? _port;
   final _receiver = StreamController<String>.broadcast();
   Stream<String>? _rxDataStream;
+  SerialPortReader? _serialPortReader;
   final _mutex = Mutex();
 
   SerialClient(this._portName) : super('Serial');
@@ -24,13 +25,17 @@ class SerialClient extends ThingSetClient {
 
   @override
   Future<void> connect() async {
-    if (SerialPort.availablePorts.contains(_portName)) {
+    if (SerialPort.availablePorts.contains(_portName) &&
+        (_port == null || !_port!.isOpen)) {
       _port = SerialPort(_portName);
       _port!.openReadWrite();
       _port!.config.baudRate = 115200;
+      _port!.config.bits = 8;
+      _port!.config.parity = 0;
+      _port!.config.stopBits = 1;
 
-      SerialPortReader reader = SerialPortReader(_port!, timeout: 3000);
-      _rxDataStream = reader.stream.map((data) {
+      _serialPortReader = SerialPortReader(_port!, timeout: 3000);
+      _rxDataStream = _serialPortReader!.stream.map((data) {
         return String.fromCharCodes(data);
       }).transform(const LineSplitter());
 
@@ -39,6 +44,8 @@ class SerialClient extends ThingSetClient {
       }, onError: (dynamic error) {
         debugPrint('Error: $error');
       });
+    } else {
+      debugPrint('Serial port $_portName not existing or in use');
     }
   }
 
@@ -86,6 +93,8 @@ class SerialClient extends ThingSetClient {
 
   @override
   Future<void> disconnect() async {
+    _serialPortReader?.close();
+    _port?.flush();
     _port?.close();
     _port?.dispose();
   }
