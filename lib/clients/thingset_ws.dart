@@ -1,7 +1,10 @@
 // Copyright (c) Libre Solar Technologies GmbH
 // SPDX-License-Identifier: GPL-3.0-only
 
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
+import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:mutex/mutex.dart';
 
@@ -20,9 +23,21 @@ class WebSocketClient extends ThingSetClient {
 
   @override
   Future<void> connect() async {
-    final wsChannel = WebSocketChannel.connect(Uri.parse(_baseUrl));
-    _receiver = wsChannel.stream.asBroadcastStream();
-    _sender = wsChannel.sink;
+    await _mutex.acquire();
+    if (_sender == null) {
+      // workaround for uncaught exception in web_socket_channel v2.4
+      // see: https://github.com/dart-lang/web_socket_channel/issues/249
+      try {
+        await WebSocket.connect(_baseUrl).then((ws) {
+          final wsChannel = IOWebSocketChannel(ws);
+          _receiver = wsChannel.stream.asBroadcastStream();
+          _sender = wsChannel.sink;
+        });
+      } catch (e) {
+        debugPrint('WebSocket Error $e');
+      }
+    }
+    _mutex.release();
   }
 
   @override
