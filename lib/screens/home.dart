@@ -4,13 +4,18 @@
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_libserialport/flutter_libserialport.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../clients/thingset_ble.dart';
+import '../clients/thingset_serial.dart';
+import '../clients/thingset_ws.dart';
 import '../models/app.dart';
 import '../models/ble_scanner.dart';
 import '../models/connector.dart';
+import '../widgets/stateful_input.dart';
 
 class HomeScreen extends StatelessWidget {
   final String _title = 'ThingSet App';
@@ -81,13 +86,29 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         backgroundColor: const Color(0xFFF0F0F0),
-        floatingActionButton: (Platform.isIOS || Platform.isAndroid)
-            ? FloatingActionButton(
-                onPressed: () => _bleScanDialog(context, appModel),
-                backgroundColor: Theme.of(context).colorScheme.secondary,
-                child: const Icon(Icons.add),
-              )
-            : null,
+        floatingActionButton: SpeedDial(
+          children: [
+            SpeedDialChild(
+              child: Icon(_connectorIcon('WebSocket')),
+              label: 'WebSocket',
+              onTap: () => _webSocketDialog(context, appModel),
+            ),
+            if (Platform.isIOS || Platform.isAndroid)
+              SpeedDialChild(
+                child: Icon(_connectorIcon('Bluetooth')),
+                label: 'Bluetooth',
+                onTap: () => _bleScanDialog(context, appModel),
+              ),
+            SpeedDialChild(
+              child: Icon(_connectorIcon('Serial')),
+              label: 'Serial',
+              onTap: () => _serialScanDialog(context, appModel),
+            ),
+          ],
+          icon: Icons.add,
+          activeIcon: Icons.close,
+          backgroundColor: Theme.of(context).colorScheme.secondary,
+        ),
       ),
     );
   }
@@ -103,6 +124,132 @@ class HomeScreen extends StatelessWidget {
       default:
         return Icons.circle;
     }
+  }
+
+  Future<void> _webSocketDialog(BuildContext context, AppModel appModel) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        String uri = 'wss://user:password@host:port/app';
+        return SimpleDialog(
+          title: const Text('Connect WebSocket'),
+          children: <Widget>[
+            Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Text('WebSocket URL:'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(15),
+                  // ToDo: create custom input field
+                  child: StatefulTextField(
+                    value: uri,
+                    unit: '',
+                    onChanged: (value) {
+                      uri = value;
+                    },
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    textStyle: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  child: const Text('Add'),
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                    var websocketClient = WebSocketClient(uri);
+                    String connectorName =
+                        'ws_${uri.replaceAll(RegExp(r'/|:|\.'), '_')}';
+                    await appModel
+                        .addConnector(
+                            connectorName, ConnectorModel(websocketClient))
+                        .timeout(const Duration(seconds: 3),
+                            onTimeout: () async =>
+                                await appModel.deleteConnector(connectorName));
+                  },
+                ),
+                TextButton(
+                    style: TextButton.styleFrom(
+                      textStyle: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    child: const Text('Cancel'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    }),
+              ],
+            ),
+          ],
+        );
+      },
+    ).then(
+      (value) {
+        // make sure we stop scanning when the dialog is closed
+        appModel.scanner?.stopScanning();
+      },
+    );
+  }
+
+  Future<void> _serialScanDialog(BuildContext context, AppModel appModel) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        var serialPorts = SerialPort.availablePorts;
+        return SimpleDialog(
+          title: const Text('Add Serial'),
+          children: <Widget>[
+            SizedBox(
+              height: 200,
+              width: 200,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(8),
+                itemCount: serialPorts.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return ListTile(
+                    title: Text(serialPorts[index]),
+                    onTap: () async {
+                      Navigator.of(context).pop();
+                      var serialClient = SerialClient(serialPorts[index]);
+                      String connectorName =
+                          'serial_${serialPorts[index].replaceAll('/', '_')}';
+                      await appModel
+                          .addConnector(
+                              connectorName, ConnectorModel(serialClient))
+                          .timeout(const Duration(seconds: 3),
+                              onTimeout: () async => await appModel
+                                  .deleteConnector(connectorName));
+                    },
+                  );
+                },
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      textStyle: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    child: const Text('Cancel'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    }),
+              ],
+            ),
+          ],
+        );
+      },
+    ).then(
+      (value) {
+        // make sure we stop scanning when the dialog is closed
+        appModel.scanner?.stopScanning();
+      },
+    );
   }
 
   Future<void> _bleScanDialog(BuildContext context, AppModel appModel) {
