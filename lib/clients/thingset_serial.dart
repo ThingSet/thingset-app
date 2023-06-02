@@ -61,7 +61,7 @@ class SerialClient extends ThingSetClient {
         if (msgRel != null) {
           msg = msgRel;
         } else {
-          return ThingSetResponse(ThingSetStatusCode.serviceUnavailable(), '');
+          return ThingSetResponse(ThingSetStatusCode.badRequest(), '');
         }
       }
 
@@ -89,7 +89,7 @@ class SerialClient extends ThingSetClient {
       }
       _mutex.release();
     }
-    return ThingSetResponse(ThingSetStatusCode.serviceUnavailable(), '');
+    return ThingSetResponse(ThingSetStatusCode.gatewayTimeout(), '');
   }
 
   @override

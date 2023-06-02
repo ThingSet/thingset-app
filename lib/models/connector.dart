@@ -88,7 +88,7 @@ class ConnectorModel extends ChangeNotifier {
     final paramsJson = jsonEncode(params);
     final reqString = '!/$nodeId/$path $paramsJson';
     final resp = await _client.request(reqString);
-    if (resp.status.isValid() && resp.data.isNotEmpty) {
+    if (resp.status.isChanged() && resp.data.isNotEmpty) {
       return jsonDecode(resp.data);
     }
   }

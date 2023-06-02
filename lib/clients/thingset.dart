@@ -12,8 +12,9 @@ class ThingSetStatusCode {
   ThingSetStatusCode.fromString(String str)
       : _status = int.parse(str, radix: 16);
 
-  ThingSetStatusCode.serviceUnavailable() : _status = 0xC3;
   ThingSetStatusCode.content() : _status = 0x85;
+  ThingSetStatusCode.badRequest() : _status = 0xA0;
+  ThingSetStatusCode.gatewayTimeout() : _status = 0xC4;
 
   int asInt() => _status;
 
@@ -21,7 +22,6 @@ class ThingSetStatusCode {
 
   bool isCreated() => _status == 0x81;
   bool isDeleted() => _status == 0x82;
-  bool isValid() => _status == 0x83;
   bool isChanged() => _status == 0x84;
   bool isContent() => _status == 0x85;
 }

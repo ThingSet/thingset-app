@@ -65,7 +65,7 @@ class WebSocketClient extends ThingSetClient {
       }
       _mutex.release();
     }
-    return ThingSetResponse(ThingSetStatusCode.serviceUnavailable(), '');
+    return ThingSetResponse(ThingSetStatusCode.gatewayTimeout(), '');
   }
 
   @override
