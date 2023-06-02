@@ -98,12 +98,15 @@ class HomeScreen extends StatelessWidget {
                 child: Icon(_connectorIcon('Bluetooth')),
                 label: 'Bluetooth',
                 onTap: () => _bleScanDialog(context, appModel),
-              ),
-            SpeedDialChild(
-              child: Icon(_connectorIcon('Serial')),
-              label: 'Serial',
-              onTap: () => _serialScanDialog(context, appModel),
-            ),
+              )
+            else if (!Platform.isAndroid)
+              // Serial not working in Android because of permission issues
+              // https://github.com/jpnurmi/flutter_libserialport/issues/26
+              SpeedDialChild(
+                child: Icon(_connectorIcon('Serial')),
+                label: 'Serial',
+                onTap: () => _serialScanDialog(context, appModel),
+              )
           ],
           icon: Icons.add,
           activeIcon: Icons.close,
