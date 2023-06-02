@@ -62,6 +62,8 @@ class BleClient extends ThingSetClient {
       return;
     }
 
+    await _mutex.acquire();
+
     debugPrint('Trying to connect...');
     final completer = Completer<void>();
 
@@ -125,6 +127,7 @@ class BleClient extends ThingSetClient {
       debugPrint('listen error: ${error.toString()}');
       completer.completeError(error);
     }
+    _mutex.release();
   }
 
   @override
