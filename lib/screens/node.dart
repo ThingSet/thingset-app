@@ -124,7 +124,7 @@ List<Widget> _listDataObjects(
           path: path.isEmpty ? item : '$path/$item',
           data: data[item],
         )
-      else if (item != 'cNodeID' &&
+      else if (item != 'pNodeID' &&
           item != 'cMetadataURL' &&
           item[0] != 'a' &&
           item[0] != 'e' &&

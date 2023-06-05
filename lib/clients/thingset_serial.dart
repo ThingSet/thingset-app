@@ -55,7 +55,7 @@ class SerialClient extends ThingSetClient {
       if (msg == '?/ null') {
         // only a single node can be connected at the moment, so we hack the
         // request to get the list of nodes
-        msg = '? ["cNodeID"]';
+        msg = '? ["pNodeID"]';
       } else {
         var msgRel = reqRelativePath(msg);
         if (msgRel != null) {
