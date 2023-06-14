@@ -65,6 +65,10 @@ class SerialClient extends ThingSetClient {
         }
       }
 
+      // add CRC to message
+      int crc = crc32(msg);
+      msg = '$msg ${crc.toRadixString(16).padLeft(8, '0').toUpperCase()}#';
+
       await _mutex.acquire();
       debugPrint('request: $msg');
       _port!.write(Uint8List.fromList('$msg\n'.codeUnits));
@@ -73,8 +77,24 @@ class SerialClient extends ThingSetClient {
           const Duration(seconds: 2),
           onTimeout: (sink) => sink.close(), // close sink to stop for loop
         );
-        await for (final response in rxStream) {
+        await for (var response in rxStream) {
           debugPrint('response: $response');
+
+          // check CRC
+          if (response.endsWith('#') && response.length > 10) {
+            var crcRx = int.parse(
+                response.substring(response.length - 9, response.length - 1),
+                radix: 16);
+            response = response.substring(0, response.length - 10);
+            var crcCalc = crc32(response);
+            if (crcRx != crcCalc) {
+              // discard invalid message and return timeout (instead of bad
+              // request) so that the app will try again
+              _mutex.release();
+              return ThingSetResponse(ThingSetStatusCode.gatewayTimeout(), '');
+            }
+          }
+
           final matches = RegExp(respRegExp).firstMatch(response.toString());
           if (matches != null && matches.groupCount == 2) {
             final status = matches[1];
@@ -98,5 +118,37 @@ class SerialClient extends ThingSetClient {
     _port?.flush();
     _port?.close();
     _port?.dispose();
+  }
+
+  // implementation from Zephyr RTOS file zephyr/lib/os/crc32_sw.c
+  int crc32(String data) {
+    // crc table generated from polynomial 0xedb88320
+    const table = [
+      0x00000000,
+      0x1db71064,
+      0x3b6e20c8,
+      0x26d930ac,
+      0x76dc4190,
+      0x6b6b51f4,
+      0x4db26158,
+      0x5005713c,
+      0xedb88320,
+      0xf00f9344,
+      0xd6d6a3e8,
+      0xcb61b38c,
+      0x9b64c2b0,
+      0x86d3d2d4,
+      0xa00ae278,
+      0xbdbdf21c,
+    ];
+
+    var crc = 0xFFFFFFFF;
+
+    for (var byte in utf8.encode(data)) {
+      crc = (crc >> 4) ^ table[(crc ^ byte) & 0x0f];
+      crc = (crc >> 4) ^ table[(crc ^ (byte >> 4)) & 0x0f];
+    }
+
+    return (~crc).toUnsigned(32);
   }
 }
