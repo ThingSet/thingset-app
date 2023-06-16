@@ -111,7 +111,7 @@ List<Widget> _listDataObjects(
   String path,
   Map<String, dynamic> data,
 ) {
-  return <Widget>[
+  var list = <Widget>[
     for (final item in data.keys)
       if (item[0].toUpperCase() == item[0] && item[0] != '_')
         DataGroup(
@@ -133,7 +133,8 @@ List<Widget> _listDataObjects(
         )
       else if (data[item] != null &&
           item != 'pNodeID' &&
-          item != 'cMetadataURL')
+          item != 'cMetadataURL' &&
+          item[0] != 'o')
         DataItem(
           connector: connector,
           node: node,
@@ -143,6 +144,25 @@ List<Widget> _listDataObjects(
           data: data[item],
         )
   ];
+
+  List<String> tags = [];
+  for (final item in data.keys) {
+    if (item[0] == 'o') {
+      tags.add('${item.substring(1)}: ${data[item]}');
+    }
+  }
+  if (tags.isNotEmpty) {
+    list.add(Padding(
+      padding: const EdgeInsets.all(8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: tags.map((tag) => Chip(label: Text(tag))).toList(),
+      ),
+    ));
+  }
+
+  return list;
 }
 
 class DataGroup extends StatelessWidget {
