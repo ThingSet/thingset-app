@@ -3,6 +3,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_libserialport/flutter_libserialport.dart';
@@ -25,6 +26,7 @@ class SerialClient extends ThingSetClient {
 
   @override
   Future<void> connect() async {
+    await _mutex.acquire();
     if (SerialPort.availablePorts.contains(_portName) &&
         (_port == null || !_port!.isOpen)) {
       _port = SerialPort(_portName);
@@ -47,6 +49,7 @@ class SerialClient extends ThingSetClient {
     } else {
       debugPrint('Serial port $_portName not existing or in use');
     }
+    _mutex.release();
   }
 
   @override
