@@ -113,9 +113,7 @@ List<Widget> _listDataObjects(
 ) {
   return <Widget>[
     for (final item in data.keys)
-      if (item[0].toUpperCase() == item[0] ||
-          data[item] == null ||
-          data[item] is Map)
+      if (item[0].toUpperCase() == item[0] && item[0] != '_')
         DataGroup(
           connector: connector,
           node: node,
@@ -124,11 +122,18 @@ List<Widget> _listDataObjects(
           path: path.isEmpty ? item : '$path/$item',
           data: data[item],
         )
-      else if (item != 'pNodeID' &&
-          item != 'cMetadataURL' &&
-          item[0] != 'a' &&
-          item[0] != 'e' &&
-          item[0] != 'm')
+      else if (item[0] == 'a' || item[0] == 'e' || item[0] == 'm')
+        Subset(
+          connector: connector,
+          node: node,
+          nodeId: nodeId,
+          subsetName: item,
+          path: path.isEmpty ? item : '$path/$item',
+          data: data[item],
+        )
+      else if (data[item] != null &&
+          item != 'pNodeID' &&
+          item != 'cMetadataURL')
         DataItem(
           connector: connector,
           node: node,
@@ -323,5 +328,72 @@ class DataItem extends StatelessWidget {
         ),
       );
     }
+  }
+}
+
+class Subset extends StatelessWidget {
+  final ConnectorModel connector;
+  final NodeModel node;
+  final String nodeId;
+  final String subsetName;
+  final String path;
+  final dynamic data;
+
+  const Subset({
+    super.key,
+    required this.connector,
+    required this.node,
+    required this.nodeId,
+    required this.subsetName,
+    required this.path,
+    required this.data,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final chunks = subsetName.split('_');
+
+    // split camel case name
+    var descr = chunks[0].substring(1);
+    descr = descr.replaceAllMapped(RegExp(r'([a-z])([A-Z0-9])'),
+        (Match m) => '${m.group(1)} ${m.group(2)}');
+    descr = descr.replaceAllMapped(RegExp(r'([A-Z0-9])([A-Z][a-z])'),
+        (Match m) => '${m.group(1)} ${m.group(2)}');
+
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: Card(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(15),
+              child: Text(
+                '$descr Subset',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            if (data is List && data.length > 0)
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: <Widget>[
+                    for (final item in data)
+                      Chip(
+                        label: Text(item),
+                        //onDeleted: () => {}
+                      )
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }
