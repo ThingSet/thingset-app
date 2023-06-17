@@ -10,19 +10,25 @@ import '../models/node.dart';
 import '../theme.dart';
 import '../widgets/stateful_input.dart';
 
-class NodeScreen extends StatelessWidget {
-  final String _connectorName;
-  final String _nodeId;
+class NodeScreen extends StatefulWidget {
+  final String connectorName;
+  final String nodeId;
 
-  const NodeScreen({super.key, required connectorName, required nodeId})
-      : _connectorName = connectorName,
-        _nodeId = nodeId;
+  const NodeScreen(
+      {super.key, required this.connectorName, required this.nodeId});
+
+  @override
+  State<NodeScreen> createState() => NodeScreenState();
+}
+
+class NodeScreenState extends State<NodeScreen> {
+  int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     ConnectorModel? connector =
-        Provider.of<AppModel>(context).connector(_connectorName);
-    NodeModel? node = connector?.nodes[_nodeId];
+        Provider.of<AppModel>(context).connector(widget.connectorName);
+    NodeModel? node = connector?.nodes[widget.nodeId];
     if (connector != null && node != null) {
       return Scaffold(
         appBar: AppBar(
@@ -38,7 +44,7 @@ class NodeScreen extends StatelessWidget {
                 ),
               ),
               Text(
-                _nodeId,
+                node.id,
                 style: const TextStyle(
                   color: Color.fromARGB(255, 179, 179, 179),
                   fontSize: 12.0,
@@ -49,27 +55,53 @@ class NodeScreen extends StatelessWidget {
         ),
         body: FutureBuilder<void>(
           future: Future.wait([
-            connector.pull(_nodeId, ''),
-            connector.pull(_nodeId, '_Reporting'),
+            connector.pull(node.id, ''),
+            connector.pull(node.id, '_Reporting'),
           ]),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
-              return NodeData(connector: connector, node: node);
+              switch (_selectedIndex) {
+                case 0:
+                  return NodeData(connector: connector, node: node);
+                default:
+                  return const Text('Live Data Screen');
+              }
             } else {
               return const LinearProgressIndicator();
             }
           },
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.account_tree_rounded),
+              label: 'Data Tree',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.stacked_line_chart_rounded),
+              label: 'Live View',
+            ),
+          ],
+          currentIndex: _selectedIndex,
+          selectedItemColor: Colors.amber[800],
+          onTap: _onItemTapped,
         ),
         backgroundColor: const Color(0xFFF0F0F0),
       );
     } else {
       return Scaffold(
         appBar: AppBar(
-          title: Text(_nodeId),
+          title: Text(widget.nodeId),
         ),
         body: const Center(child: Text('Node not found')),
       );
     }
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 }
 
