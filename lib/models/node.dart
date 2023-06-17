@@ -56,6 +56,40 @@ class NodeModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  dynamic getReported(String path) {
+    dynamic obj = _reported;
+    if (path.isNotEmpty) {
+      for (final chunk in path.split('/')) {
+        if (obj is Map && obj.containsKey(chunk)) {
+          obj = obj[chunk];
+        } else {
+          return null;
+        }
+      }
+    }
+    return obj;
+  }
+
+  bool hasReportingSetup(String path) {
+    path = '_Reporting/$path';
+    bool ret = true;
+    Map<String, dynamic> obj = _reported;
+    if (path.isEmpty) {
+      return false;
+    } else {
+      for (final chunk in path.split('/')) {
+        if (obj.containsKey(chunk)) {
+          if (obj[chunk] is Map && obj[chunk].isNotEmpty) {
+            obj = obj[chunk];
+          }
+        } else {
+          ret = false;
+        }
+      }
+    }
+    return ret;
+  }
+
   void setDesired(String path, dynamic jsonData) {
     Map<String, dynamic> obj = _desired;
     if (path.isNotEmpty) {

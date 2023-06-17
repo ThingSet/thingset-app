@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../models/app.dart';
 import '../models/connector.dart';
 import '../models/node.dart';
+import '../theme.dart';
 import '../widgets/stateful_input.dart';
 
 class NodeScreen extends StatelessWidget {
@@ -47,11 +48,13 @@ class NodeScreen extends StatelessWidget {
           ),
         ),
         body: FutureBuilder<void>(
-          future: connector.pull(_nodeId, ''),
+          future: Future.wait([
+            connector.pull(_nodeId, ''),
+            connector.pull(_nodeId, '_Reporting'),
+          ]),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
-              return NodeData(
-                  connector: connector, node: node);
+              return NodeData(connector: connector, node: node);
             } else {
               return const LinearProgressIndicator();
             }
@@ -74,10 +77,7 @@ class NodeData extends StatelessWidget {
   final ConnectorModel connector;
   final NodeModel node;
 
-  const NodeData(
-      {super.key,
-      required this.connector,
-      required this.node});
+  const NodeData({super.key, required this.connector, required this.node});
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +129,8 @@ List<Widget> _listDataObjects(
           item != 'pNodeID' &&
           item != 'pNodeName' &&
           item != 'cMetadataURL' &&
-          item[0] != 'o')
+          item[0] != 'o' &&
+          item[0] != '_')
         DataItem(
           connector: connector,
           node: node,
@@ -175,7 +176,7 @@ class DataGroup extends StatelessWidget {
     required this.data,
   });
 
-  Widget? _icons() {
+  Widget? _icons(BuildContext context) {
     return SizedBox(
       width: 100.0,
       child: Row(
@@ -186,6 +187,14 @@ class DataGroup extends StatelessWidget {
               icon: const Icon(Icons.save),
               onPressed: () async {
                 await connector.push(node.id, path);
+              },
+            ),
+          if (node.hasReportingSetup(path))
+            IconButton(
+              icon: const Icon(Icons.notifications, color: primaryColor),
+              onPressed: () async {
+                await _reportingSetupDialog(
+                    context, connector, node, groupName, '_Reporting/$path/_');
               },
             ),
           IconButton(
@@ -208,7 +217,7 @@ class DataGroup extends StatelessWidget {
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: Card(
         child: ExpansionTile(
-          trailing: _icons(),
+          trailing: _icons(context),
           controlAffinity: ListTileControlAffinity.leading,
           title: Padding(
             padding: const EdgeInsets.all(10),
@@ -373,15 +382,32 @@ class Subset extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(15),
-              child: Text(
-                '$descr Subset',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+            Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(15),
+                  child: Text(
+                    '$descr Subset',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
                 ),
-              ),
+                const Spacer(),
+                if (node.hasReportingSetup(path))
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: IconButton(
+                      icon:
+                          const Icon(Icons.notifications, color: primaryColor),
+                      onPressed: () async {
+                        await _reportingSetupDialog(context, connector, node,
+                            subsetName, '_Reporting/$path');
+                      },
+                    ),
+                  ),
+              ],
             ),
             if (data is List && data.length > 0)
               Padding(
@@ -403,4 +429,58 @@ class Subset extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> _reportingSetupDialog(
+    BuildContext context,
+    ConnectorModel connector,
+    NodeModel node,
+    String groupName,
+    String path) async {
+  await connector.pull(node.id, path);
+  return showDialog<void>(
+    context: context,
+    builder: (BuildContext context) {
+      var data = node.getReported(path);
+      return SimpleDialog(
+        title: const Text('Reporting Setup'),
+        children: <Widget>[
+          if (data != null)
+            ..._listDataObjects(
+              context,
+              connector,
+              node,
+              path,
+              data,
+            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                ),
+                child: const Text('Save'),
+                onPressed: () async {
+                  if (node.hasDesiredChanged(path)) {
+                    await connector.push(node.id, path);
+                  }
+                  // ignore: use_build_context_synchronously
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                  style: TextButton.styleFrom(
+                    textStyle: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  child: const Text('Cancel'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  }),
+            ],
+          ),
+        ],
+      );
+    },
+  );
 }
