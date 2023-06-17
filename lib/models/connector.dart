@@ -47,7 +47,7 @@ class ConnectorModel extends ChangeNotifier {
     if (resp.status.isContent()) {
       for (final nodeId in jsonDecode(resp.data)) {
         if (_nodes[nodeId] == null && nodeId != '') {
-          _nodes[nodeId] = NodeModel();
+          _nodes[nodeId] = NodeModel(nodeId);
 
           // try to determine node name
           await pull(nodeId, '');

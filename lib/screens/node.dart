@@ -51,7 +51,7 @@ class NodeScreen extends StatelessWidget {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
               return NodeData(
-                  connector: connector, node: node, nodeId: _nodeId);
+                  connector: connector, node: node);
             } else {
               return const LinearProgressIndicator();
             }
@@ -73,13 +73,11 @@ class NodeScreen extends StatelessWidget {
 class NodeData extends StatelessWidget {
   final ConnectorModel connector;
   final NodeModel node;
-  final String nodeId;
 
   const NodeData(
       {super.key,
       required this.connector,
-      required this.node,
-      required this.nodeId});
+      required this.node});
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +91,6 @@ class NodeData extends StatelessWidget {
             context,
             connector,
             node,
-            nodeId,
             '',
             node.reported,
           ),
@@ -107,7 +104,6 @@ List<Widget> _listDataObjects(
   BuildContext context,
   ConnectorModel connector,
   NodeModel node,
-  String nodeId,
   String path,
   Map<String, dynamic> data,
 ) {
@@ -117,7 +113,6 @@ List<Widget> _listDataObjects(
         DataGroup(
           connector: connector,
           node: node,
-          nodeId: nodeId,
           groupName: item,
           path: path.isEmpty ? item : '$path/$item',
           data: data[item],
@@ -126,7 +121,6 @@ List<Widget> _listDataObjects(
         Subset(
           connector: connector,
           node: node,
-          nodeId: nodeId,
           subsetName: item,
           path: path.isEmpty ? item : '$path/$item',
           data: data[item],
@@ -138,7 +132,6 @@ List<Widget> _listDataObjects(
         DataItem(
           connector: connector,
           node: node,
-          nodeId: nodeId,
           itemName: item,
           path: path.isEmpty ? item : '$path/$item',
           data: data[item],
@@ -168,7 +161,6 @@ List<Widget> _listDataObjects(
 class DataGroup extends StatelessWidget {
   final ConnectorModel connector;
   final NodeModel node;
-  final String nodeId;
   final String groupName;
   final String path;
   final dynamic data;
@@ -177,7 +169,6 @@ class DataGroup extends StatelessWidget {
     super.key,
     required this.connector,
     required this.node,
-    required this.nodeId,
     required this.groupName,
     required this.path,
     required this.data,
@@ -193,7 +184,7 @@ class DataGroup extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.save),
               onPressed: () async {
-                await connector.push(nodeId, path);
+                await connector.push(node.id, path);
               },
             ),
           IconButton(
@@ -202,7 +193,7 @@ class DataGroup extends StatelessWidget {
             onPressed: () async {
               node.clearReported(path);
               node.clearDesired(path);
-              await connector.pull(nodeId, path);
+              await connector.pull(node.id, path);
             },
           ),
         ],
@@ -233,14 +224,13 @@ class DataGroup extends StatelessWidget {
                 context,
                 connector,
                 node,
-                nodeId,
                 path,
                 data,
               )
           ],
           onExpansionChanged: (value) async {
             if (value == true) {
-              await connector.pull(nodeId, path);
+              await connector.pull(node.id, path);
             }
           },
         ),
@@ -261,7 +251,6 @@ const unitFix = {
 class DataItem extends StatelessWidget {
   final ConnectorModel connector;
   final NodeModel node;
-  final String nodeId;
   final String itemName;
   final String path;
   final dynamic data;
@@ -270,7 +259,6 @@ class DataItem extends StatelessWidget {
     super.key,
     required this.connector,
     required this.node,
-    required this.nodeId,
     required this.itemName,
     required this.path,
     required this.data,
@@ -308,7 +296,7 @@ class DataItem extends StatelessWidget {
         title: ElevatedButton(
           child: Text(descr),
           onPressed: () {
-            connector.exec(nodeId, path, []);
+            connector.exec(node.id, path, []);
           },
         ),
         trailing: paramsWidget,
@@ -354,7 +342,6 @@ class DataItem extends StatelessWidget {
 class Subset extends StatelessWidget {
   final ConnectorModel connector;
   final NodeModel node;
-  final String nodeId;
   final String subsetName;
   final String path;
   final dynamic data;
@@ -363,7 +350,6 @@ class Subset extends StatelessWidget {
     super.key,
     required this.connector,
     required this.node,
-    required this.nodeId,
     required this.subsetName,
     required this.path,
     required this.data,

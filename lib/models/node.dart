@@ -7,10 +7,15 @@ class NodeModel extends ChangeNotifier {
   String name = 'ThingSet Node';
   final Map<String, dynamic> _desired = {};
   final Map<String, dynamic> _reported = {};
+  final String _nodeId;
 
   Map<String, dynamic> get desired => _desired;
 
   Map<String, dynamic> get reported => _reported;
+
+  String get id => _nodeId;
+
+  NodeModel(this._nodeId);
 
   bool hasDesiredChanged(String path) {
     Map<String, dynamic> obj = _desired;
