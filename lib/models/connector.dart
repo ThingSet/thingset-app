@@ -51,8 +51,8 @@ class ConnectorModel extends ChangeNotifier {
 
           // try to determine node name
           await pull(nodeId, '');
-          if (_nodes[nodeId]!.reported.containsKey('cNodeName')) {
-            _nodes[nodeId]!.name = _nodes[nodeId]!.reported['cNodeName'];
+          if (_nodes[nodeId]!.reported.containsKey('pNodeName')) {
+            _nodes[nodeId]!.name = _nodes[nodeId]!.reported['pNodeName'];
           } else if (_nodes[nodeId]!.reported.containsKey('Device')) {
             await pull(nodeId, 'Device');
             var device = _nodes[nodeId]!.reported['Device'];

@@ -127,6 +127,7 @@ List<Widget> _listDataObjects(
         )
       else if (data[item] != null &&
           item != 'pNodeID' &&
+          item != 'pNodeName' &&
           item != 'cMetadataURL' &&
           item[0] != 'o')
         DataItem(
