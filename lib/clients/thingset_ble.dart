@@ -33,8 +33,9 @@ class BleClient extends ThingSetClient {
   QualifiedCharacteristic? _respCharacteristic;
   StreamSubscription? _rxStreamSubscription;
   bool _connected = false;
-  String _response = '';
-  final _receiver = StreamController<String>.broadcast();
+  String _message = '';
+  final _responses = StreamController<ThingSetMessage>.broadcast();
+  final _reports = StreamController<ThingSetMessage>.broadcast();
   int _mtu = 20;
 
   BleClient(this._ble, this._device) : super('Bluetooth');
@@ -45,13 +46,19 @@ class BleClient extends ThingSetClient {
   void _processReceivedData(List<int> data) {
     for (final byte in data) {
       if (byte == slipEnd) {
-        if (_response.isNotEmpty) {
-          _receiver.add(_response);
-          debugPrint('response: $_response');
-          _response = '';
+        if (_message.isNotEmpty) {
+          final msg = parseThingSetMessage(_message);
+          if (msg != null) {
+            if (msg.function.isReport()) {
+              _reports.add(msg);
+            } else {
+              _responses.add(msg);
+            }
+          }
+          _message = '';
         } // else: ignore character
       } else {
-        _response += String.fromCharCode(byte);
+        _message += String.fromCharCode(byte);
       }
     }
   }
@@ -131,7 +138,7 @@ class BleClient extends ThingSetClient {
   }
 
   @override
-  Future<ThingSetResponse> request(String msg) async {
+  Future<ThingSetMessage> request(String msg) async {
     if (_connected) {
       if (msg == '?/ null') {
         // only a single node can be connected at the moment, so we hack the
@@ -142,7 +149,7 @@ class BleClient extends ThingSetClient {
         if (msgRel != null) {
           msg = msgRel;
         } else {
-          return ThingSetResponse(ThingSetStatusCode.badRequest(), '');
+          return ThingSetMessage(ThingSetFunctionCode.badRequest(), '', '');
         }
       }
 
@@ -158,26 +165,26 @@ class BleClient extends ThingSetClient {
       }
 
       try {
-        var rxStream = _receiver.stream.timeout(
+        var rxStream = _responses.stream.timeout(
           const Duration(seconds: 2),
           onTimeout: (sink) => sink.close(), // close sink to stop for loop
         );
-        await for (final value in rxStream) {
-          final matches = RegExp(respRegExp).firstMatch(value.toString());
-          if (matches != null && matches.groupCount == 2) {
-            final status = matches[1];
-            final jsonData = matches[2]!;
-            _mutex.release();
-            return ThingSetResponse(
-                ThingSetStatusCode.fromString(status!), jsonData);
-          }
+        await for (final response in rxStream) {
+          debugPrint('response: $response');
+          _mutex.release();
+          return response;
         }
       } catch (error) {
         debugPrint('Bluetooth error: $error');
       }
       _mutex.release();
     }
-    return ThingSetResponse(ThingSetStatusCode.gatewayTimeout(), '');
+    return ThingSetMessage(ThingSetFunctionCode.gatewayTimeout(), '', '');
+  }
+
+  @override
+  Stream<ThingSetMessage> reports() {
+    return _reports.stream;
   }
 
   @override

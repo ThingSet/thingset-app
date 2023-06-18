@@ -5,6 +5,7 @@
 ///
 /// Initializes different types of clients and assigns them to nodes
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -18,6 +19,8 @@ class ConnectorModel extends ChangeNotifier {
 
   /// ThingSet client used by this connector
   final ThingSetClient _client;
+
+  StreamSubscription<ThingSetMessage>? _reportSubscription;
 
   bool _connected = false;
 
@@ -44,7 +47,7 @@ class ConnectorModel extends ChangeNotifier {
     }
 
     final resp = await _client.request('?/ null');
-    if (resp.status.isContent()) {
+    if (resp.function.isContent()) {
       for (final nodeId in jsonDecode(resp.data)) {
         if (_nodes[nodeId] == null && nodeId != '') {
           _nodes[nodeId] = NodeModel(nodeId);
@@ -74,7 +77,7 @@ class ConnectorModel extends ChangeNotifier {
     final reqString =
         path.isEmpty ? '=/$nodeId $dataStr' : '=/$nodeId/$path $dataStr';
     final resp = await _client.request(reqString);
-    if (resp.status.isChanged()) {
+    if (resp.function.isChanged()) {
       _nodes[nodeId]?.clearDesired(path);
       _nodes[nodeId]?.mergeReported(path, data);
     }
@@ -88,7 +91,7 @@ class ConnectorModel extends ChangeNotifier {
     final paramsJson = jsonEncode(params);
     final reqString = '!/$nodeId/$path $paramsJson';
     final resp = await _client.request(reqString);
-    if (resp.status.isChanged() && resp.data.isNotEmpty) {
+    if (resp.function.isChanged() && resp.data.isNotEmpty) {
       return jsonDecode(resp.data);
     }
   }
@@ -97,7 +100,7 @@ class ConnectorModel extends ChangeNotifier {
   Future<void> pull(String nodeId, String path) async {
     final reqString = path.isEmpty ? '?/$nodeId' : '?/$nodeId/$path';
     final resp = await _client.request(reqString);
-    if (resp.status.isContent()) {
+    if (resp.function.isContent()) {
       final jsonData = jsonDecode(resp.data);
       if (jsonData is Map) {
         _nodes[nodeId]?.mergeReported(path, jsonData);
@@ -107,9 +110,14 @@ class ConnectorModel extends ChangeNotifier {
 
   Future<void> connect() async {
     await _client.connect();
+    _reportSubscription = _client.reports().listen((msg) {
+      // ToDo: store data in node model
+      debugPrint(msg.toString());
+    });
   }
 
   Future<void> disconnect() async {
+    await _reportSubscription?.cancel();
     await _client.disconnect();
   }
 }

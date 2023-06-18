@@ -3,34 +3,68 @@
 
 const reqRegExp = r'^([?=+\-!])([^ ]*) *(.*)$';
 const respRegExp = r'^:([0-9A-F]*)[^ ]* ?(.*)$';
+const reportRegExp = r'^#([^ ]*) (.*)$';
 
-class ThingSetStatusCode {
-  final int _status;
+class ThingSetFunctionCode {
+  final int _code;
 
-  ThingSetStatusCode(this._status);
+  ThingSetFunctionCode(this._code);
 
-  ThingSetStatusCode.fromString(String str)
-      : _status = int.parse(str, radix: 16);
+  ThingSetFunctionCode.fromString(String str)
+      : _code = int.parse(str, radix: 16);
 
-  ThingSetStatusCode.content() : _status = 0x85;
-  ThingSetStatusCode.badRequest() : _status = 0xA0;
-  ThingSetStatusCode.gatewayTimeout() : _status = 0xC4;
+  ThingSetFunctionCode.content() : _code = 0x85;
+  ThingSetFunctionCode.badRequest() : _code = 0xA0;
+  ThingSetFunctionCode.gatewayTimeout() : _code = 0xC4;
 
-  int asInt() => _status;
+  int asInt() => _code;
 
-  String asString() => _status.toRadixString(16).padLeft(2, '0').toUpperCase();
+  @override
+  String toString() {
+    if (_code > 0x80) {
+      // only valid for text mode
+      return ':${_code.toRadixString(16).padLeft(2, '0').toUpperCase()}';
+    } else {
+      return String.fromCharCode(_code);
+    }
+  }
 
-  bool isCreated() => _status == 0x81;
-  bool isDeleted() => _status == 0x82;
-  bool isChanged() => _status == 0x84;
-  bool isContent() => _status == 0x85;
+  bool isReport() => _code == '#'.codeUnitAt(0);
+  bool isCreated() => _code == 0x81;
+  bool isDeleted() => _code == 0x82;
+  bool isChanged() => _code == 0x84;
+  bool isContent() => _code == 0x85;
 }
 
-class ThingSetResponse {
-  final ThingSetStatusCode status;
-  final String data;
+class ThingSetMessage {
+  late ThingSetFunctionCode function;
+  late String endpoint;
+  late String data;
 
-  ThingSetResponse(this.status, this.data);
+  ThingSetMessage(this.function, this.endpoint, this.data);
+
+  @override
+  String toString() {
+    return '$function$endpoint $data';
+  }
+}
+
+ThingSetMessage? parseThingSetMessage(String str) {
+  dynamic matches;
+
+  matches = RegExp(respRegExp).firstMatch(str);
+  if (matches != null && matches.groupCount == 2) {
+    final function = ThingSetFunctionCode.fromString(matches[1]!);
+    return ThingSetMessage(function, '', matches[2]!);
+  }
+
+  matches = RegExp(reportRegExp).firstMatch(str);
+  if (matches != null && matches.groupCount == 2) {
+    final function = ThingSetFunctionCode('#'.codeUnitAt(0));
+    return ThingSetMessage(function, matches[1]!, matches[2]!);
+  }
+
+  return null;
 }
 
 // This class mainly handles routing of request/response messages and pub/sub
@@ -64,7 +98,9 @@ abstract class ThingSetClient {
   // Establish connection with the remote node
   Future<void> connect();
   // Send a ThingSet request and await response
-  Future<ThingSetResponse> request(String msg);
+  Future<ThingSetMessage> request(String msg);
+  // Get stream with reports
+  Stream<ThingSetMessage> reports();
   // Disconnect from the node
   Future<void> disconnect();
 }

@@ -13,7 +13,8 @@ import 'thingset.dart';
 class SerialClient extends ThingSetClient {
   final String _portName;
   final SerialPort _port;
-  final _receiver = StreamController<String>.broadcast();
+  final _responses = StreamController<ThingSetMessage>.broadcast();
+  final _reports = StreamController<ThingSetMessage>.broadcast();
   StreamSubscription? _rxStreamSubscription;
   SerialPortReader? _serialPortReader;
   final _mutex = Mutex();
@@ -40,8 +41,28 @@ class SerialClient extends ThingSetClient {
           return String.fromCharCodes(data);
         }).transform(const LineSplitter());
 
-        _rxStreamSubscription = rxDataStream.listen((data) {
-          _receiver.add(data);
+        _rxStreamSubscription = rxDataStream.listen((str) {
+          // check CRC
+          if (str.endsWith('#') && str.length > 10) {
+            var crcRx = int.parse(str.substring(str.length - 9, str.length - 1),
+                radix: 16);
+            str = str.substring(0, str.length - 10);
+            var crcCalc = crc32(str);
+            if (crcRx != crcCalc) {
+              // discard invalid message and return timeout (instead of bad
+              // request) so that the app will try again
+              return;
+            }
+          }
+
+          final msg = parseThingSetMessage(str);
+          if (msg != null) {
+            if (msg.function.isReport()) {
+              _reports.add(msg);
+            } else {
+              _responses.add(msg);
+            }
+          }
         }, onError: (dynamic error) {
           debugPrint('Error: $error');
         });
@@ -53,7 +74,7 @@ class SerialClient extends ThingSetClient {
   }
 
   @override
-  Future<ThingSetResponse> request(String msg) async {
+  Future<ThingSetMessage> request(String msg) async {
     if (_port.isOpen) {
       if (msg == '?/ null') {
         // only a single node can be connected at the moment, so we hack the
@@ -64,7 +85,7 @@ class SerialClient extends ThingSetClient {
         if (msgRel != null) {
           msg = msgRel;
         } else {
-          return ThingSetResponse(ThingSetStatusCode.badRequest(), '');
+          return ThingSetMessage(ThingSetFunctionCode.badRequest(), '', '');
         }
       }
 
@@ -76,42 +97,28 @@ class SerialClient extends ThingSetClient {
       debugPrint('request: $msg');
       _port.write(Uint8List.fromList('$msg\n'.codeUnits));
       try {
-        var rxStream = _receiver.stream.timeout(
+        var rxStream = _responses.stream.timeout(
           const Duration(seconds: 2),
           onTimeout: (sink) => sink.close(), // close sink to stop for loop
         );
         await for (var response in rxStream) {
           debugPrint('response: $response');
-
-          // check CRC
-          if (response.endsWith('#') && response.length > 10) {
-            var crcRx = int.parse(
-                response.substring(response.length - 9, response.length - 1),
-                radix: 16);
-            response = response.substring(0, response.length - 10);
-            var crcCalc = crc32(response);
-            if (crcRx != crcCalc) {
-              // discard invalid message and return timeout (instead of bad
-              // request) so that the app will try again
-              _mutex.release();
-              return ThingSetResponse(ThingSetStatusCode.gatewayTimeout(), '');
-            }
-          }
-
-          final matches = RegExp(respRegExp).firstMatch(response.toString());
-          if (matches != null && matches.groupCount == 2) {
-            final status = ThingSetStatusCode.fromString(matches[1]!);
-            final jsonData = matches[2]!;
-            _mutex.release();
-            return ThingSetResponse(status, jsonData);
-          }
+          _mutex.release();
+          return response;
         }
       } catch (error) {
         debugPrint('Serial error: $error');
       }
-      _mutex.release();
+      if (_mutex.isLocked) {
+        _mutex.release();
+      }
     }
-    return ThingSetResponse(ThingSetStatusCode.gatewayTimeout(), '');
+    return ThingSetMessage(ThingSetFunctionCode.gatewayTimeout(), '', '');
+  }
+
+  @override
+  Stream<ThingSetMessage> reports() {
+    return _reports.stream;
   }
 
   @override
