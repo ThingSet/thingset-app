@@ -14,7 +14,7 @@ class SerialClient extends ThingSetClient {
   final String _portName;
   final SerialPort _port;
   final _receiver = StreamController<String>.broadcast();
-  Stream<String>? _rxDataStream;
+  StreamSubscription? _rxStreamSubscription;
   SerialPortReader? _serialPortReader;
   final _mutex = Mutex();
 
@@ -36,11 +36,11 @@ class SerialClient extends ThingSetClient {
         _port.config.stopBits = 1;
 
         _serialPortReader = SerialPortReader(_port, timeout: 3000);
-        _rxDataStream = _serialPortReader!.stream.map((data) {
+        final rxDataStream = _serialPortReader!.stream.map((data) {
           return String.fromCharCodes(data);
         }).transform(const LineSplitter());
 
-        _rxDataStream!.listen((data) {
+        _rxStreamSubscription = rxDataStream.listen((data) {
           _receiver.add(data);
         }, onError: (dynamic error) {
           debugPrint('Error: $error');
@@ -116,6 +116,7 @@ class SerialClient extends ThingSetClient {
 
   @override
   Future<void> disconnect() async {
+    await _rxStreamSubscription?.cancel();
     _serialPortReader?.close();
     _port.flush();
     _port.close();

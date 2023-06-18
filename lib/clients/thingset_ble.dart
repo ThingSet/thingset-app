@@ -31,7 +31,7 @@ class BleClient extends ThingSetClient {
   StreamSubscription? _connection;
   QualifiedCharacteristic? _reqCharacteristic;
   QualifiedCharacteristic? _respCharacteristic;
-  Stream? _respDataStream;
+  StreamSubscription? _rxStreamSubscription;
   bool _connected = false;
   String _response = '';
   final _receiver = StreamController<String>.broadcast();
@@ -94,9 +94,9 @@ class BleClient extends ThingSetClient {
                 characteristicId: uuidThingSetResponse,
                 deviceId: event.deviceId);
 
-            _respDataStream =
+            var respDataStream =
                 _ble.subscribeToCharacteristic(_respCharacteristic!);
-            _respDataStream!.listen((data) {
+            _rxStreamSubscription = respDataStream.listen((data) {
               _processReceivedData(data);
             }, onError: (dynamic error) {
               debugPrint('Error: $error');
@@ -182,6 +182,7 @@ class BleClient extends ThingSetClient {
 
   @override
   Future<void> disconnect() async {
+    await _rxStreamSubscription?.cancel();
     await _connection?.cancel();
     _connected = false;
   }
