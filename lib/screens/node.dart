@@ -9,6 +9,7 @@ import '../models/connector.dart';
 import '../models/node.dart';
 import '../theme.dart';
 import '../widgets/stateful_input.dart';
+import 'chart.dart';
 
 class NodeScreen extends StatefulWidget {
   final String connectorName;
@@ -64,7 +65,7 @@ class NodeScreenState extends State<NodeScreen> {
                 case 0:
                   return NodeData(connector: connector, node: node);
                 default:
-                  return const Text('Live Data Screen');
+                  return LiveView(connector: connector, node: node);
               }
             } else {
               return const LinearProgressIndicator();
@@ -102,6 +103,23 @@ class NodeScreenState extends State<NodeScreen> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+}
+
+class LiveView extends StatelessWidget {
+  final ConnectorModel connector;
+  final NodeModel node;
+
+  const LiveView({super.key, required this.connector, required this.node});
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider<NodeModel>.value(
+      value: node,
+      child: Consumer<NodeModel>(
+        builder: (_, model, __) => LiveChart(node: node),
+      ),
+    );
   }
 }
 

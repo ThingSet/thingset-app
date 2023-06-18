@@ -4,16 +4,28 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class NodeModel extends ChangeNotifier {
   String name = 'ThingSet Node';
   final Map<String, dynamic> _desired = {};
   final Map<String, dynamic> _reported = {};
+  final Map<String, List<FlSpot>> _timeseries = {};
+  final List<String> _selectedSeries = [];
+  // set the timestamp of the last full hour as the starting value
+  final _startTime =
+      (DateTime.now().millisecondsSinceEpoch ~/ 1000 ~/ 3600 * 3600).toDouble();
   final String _nodeId;
 
   Map<String, dynamic> get desired => _desired;
 
   Map<String, dynamic> get reported => _reported;
+
+  Map<String, List<FlSpot>> get timeseries => _timeseries;
+
+  List<String> get selectedSeries => _selectedSeries;
+
+  double get startTime => _startTime;
 
   String get id => _nodeId;
 
@@ -63,6 +75,40 @@ class NodeModel extends ChangeNotifier {
     path = (path.isNotEmpty && path[0].toUpperCase() == path[0]) ? path : '';
     Map<String, dynamic> obj = jsonDecode(payload);
     mergeReported(path, obj);
+
+    // add path as prefix
+    String prefix = path.isNotEmpty ? '$path/' : '';
+    final time = DateTime.now().millisecondsSinceEpoch / 1000;
+    for (final key1 in obj.keys) {
+      if (obj[key1] is Map) {
+        /* supporting max. depth of 2 for now */
+        for (final key2 in obj[key1].keys) {
+          if (obj[key1][key2] is double) {
+            //debugPrint('$prefix$key1/$key2 = ${obj[key1][key2]}');
+            if (!_timeseries.containsKey('$prefix$key1/$key2')) {
+              _timeseries['$prefix$key1/$key2'] = [];
+            }
+            _timeseries['$prefix$key1/$key2']!
+                .add(FlSpot(time - _startTime, obj[key1][key2]));
+            if (_timeseries['$prefix$key1/$key2']!.length > 300) {
+              _timeseries['$prefix$key1/$key2']!.removeAt(0);
+            }
+          }
+        }
+      } else {
+        if (obj[key1] is double) {
+          // debugPrint('$prefix$key1 = ${obj[key1]}');
+          if (!_timeseries.containsKey('$prefix$key1')) {
+            _timeseries['$prefix$key1'] = [];
+          }
+          _timeseries['$prefix$key1']!
+              .add(FlSpot(time - _startTime, obj[key1]));
+          if (_timeseries['$prefix$key1']!.length > 300) {
+            _timeseries['$prefix$key1']!.removeAt(0);
+          }
+        }
+      }
+    }
     notifyListeners();
   }
 
