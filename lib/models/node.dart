@@ -1,6 +1,8 @@
 // Copyright (c) Libre Solar Technologies GmbH
 // SPDX-License-Identifier: GPL-3.0-only
 
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 
 class NodeModel extends ChangeNotifier {
@@ -53,6 +55,14 @@ class NodeModel extends ChangeNotifier {
       }
     }
     obj.addAll(jsonData);
+    notifyListeners();
+  }
+
+  void storeReport(String path, String payload) {
+    // set path to empty string if subset was reported
+    path = (path.isNotEmpty && path[0].toUpperCase() == path[0]) ? path : '';
+    Map<String, dynamic> obj = jsonDecode(payload);
+    mergeReported(path, obj);
     notifyListeners();
   }
 

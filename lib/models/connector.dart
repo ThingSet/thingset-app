@@ -111,8 +111,10 @@ class ConnectorModel extends ChangeNotifier {
   Future<void> connect() async {
     await _client.connect();
     _reportSubscription = _client.reports().listen((msg) {
-      // ToDo: store data in node model
-      debugPrint(msg.toString());
+      /* ToDo: support more nodes per connector */
+      if (_nodes.isNotEmpty) {
+        _nodes[_nodes.keys.first]?.storeReport(msg.endpoint, msg.data);
+      }
     });
   }
 
