@@ -3,7 +3,6 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_libserialport/flutter_libserialport.dart';
@@ -13,48 +12,49 @@ import 'thingset.dart';
 
 class SerialClient extends ThingSetClient {
   final String _portName;
-  SerialPort? _port;
+  final SerialPort _port;
   final _receiver = StreamController<String>.broadcast();
   Stream<String>? _rxDataStream;
   SerialPortReader? _serialPortReader;
   final _mutex = Mutex();
 
-  SerialClient(this._portName) : super('Serial');
+  SerialClient(this._portName)
+      : _port = SerialPort(_portName),
+        super('Serial');
 
   @override
   String get id => _portName;
 
   @override
   Future<void> connect() async {
-    await _mutex.acquire();
-    if (SerialPort.availablePorts.contains(_portName) &&
-        (_port == null || !_port!.isOpen)) {
-      _port = SerialPort(_portName);
-      _port!.openReadWrite();
-      _port!.config.baudRate = 115200;
-      _port!.config.bits = 8;
-      _port!.config.parity = 0;
-      _port!.config.stopBits = 1;
+    if (!_port.isOpen) {
+      await _mutex.acquire();
+      if (_port.openReadWrite()) {
+        _port.config.baudRate = 115200;
+        _port.config.bits = 8;
+        _port.config.parity = 0;
+        _port.config.stopBits = 1;
 
-      _serialPortReader = SerialPortReader(_port!, timeout: 3000);
-      _rxDataStream = _serialPortReader!.stream.map((data) {
-        return String.fromCharCodes(data);
-      }).transform(const LineSplitter());
+        _serialPortReader = SerialPortReader(_port, timeout: 3000);
+        _rxDataStream = _serialPortReader!.stream.map((data) {
+          return String.fromCharCodes(data);
+        }).transform(const LineSplitter());
 
-      _rxDataStream!.listen((data) {
-        _receiver.add(data);
-      }, onError: (dynamic error) {
-        debugPrint('Error: $error');
-      });
-    } else {
-      debugPrint('Serial port $_portName not existing or in use');
+        _rxDataStream!.listen((data) {
+          _receiver.add(data);
+        }, onError: (dynamic error) {
+          debugPrint('Error: $error');
+        });
+      } else {
+        debugPrint('Opening serial port $_portName failed');
+      }
+      _mutex.release();
     }
-    _mutex.release();
   }
 
   @override
   Future<ThingSetResponse> request(String msg) async {
-    if (_port != null) {
+    if (_port.isOpen) {
       if (msg == '?/ null') {
         // only a single node can be connected at the moment, so we hack the
         // request to get the list of nodes
@@ -74,7 +74,7 @@ class SerialClient extends ThingSetClient {
 
       await _mutex.acquire();
       debugPrint('request: $msg');
-      _port!.write(Uint8List.fromList('$msg\n'.codeUnits));
+      _port.write(Uint8List.fromList('$msg\n'.codeUnits));
       try {
         var rxStream = _receiver.stream.timeout(
           const Duration(seconds: 2),
@@ -100,11 +100,10 @@ class SerialClient extends ThingSetClient {
 
           final matches = RegExp(respRegExp).firstMatch(response.toString());
           if (matches != null && matches.groupCount == 2) {
-            final status = matches[1];
+            final status = ThingSetStatusCode.fromString(matches[1]!);
             final jsonData = matches[2]!;
             _mutex.release();
-            return ThingSetResponse(
-                ThingSetStatusCode.fromString(status!), jsonData);
+            return ThingSetResponse(status, jsonData);
           }
         }
       } catch (error) {
@@ -118,9 +117,8 @@ class SerialClient extends ThingSetClient {
   @override
   Future<void> disconnect() async {
     _serialPortReader?.close();
-    _port?.flush();
-    _port?.close();
-    _port?.dispose();
+    _port.flush();
+    _port.close();
   }
 
   // implementation from Zephyr RTOS file zephyr/lib/os/crc32_sw.c
