@@ -63,7 +63,8 @@ class LiveChart extends StatelessWidget {
         ((node.startTime + value) * 1000).toInt());
 
     if (value.toInt().toDouble() == value.toDouble()) {
-      text = Text('${time.hour}:${time.minute}');
+      text = Text(
+          '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}');
     } else {
       text = Container();
     }
