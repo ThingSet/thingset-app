@@ -73,7 +73,14 @@ class NodeModel extends ChangeNotifier {
   void storeReport(String path, String payload) {
     // set path to empty string if subset was reported
     path = (path.isNotEmpty && path[0].toUpperCase() == path[0]) ? path : '';
-    Map<String, dynamic> obj = jsonDecode(payload);
+    Map<String, dynamic> obj;
+    try {
+      obj = jsonDecode(payload);
+    } catch (e) {
+      debugPrint('failed to parse report payload: $payload');
+      return;
+    }
+
     mergeReported(path, obj);
 
     // add path as prefix

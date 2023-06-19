@@ -48,7 +48,15 @@ class ConnectorModel extends ChangeNotifier {
 
     final resp = await _client.request('?/ null');
     if (resp.function.isContent()) {
-      for (final nodeId in jsonDecode(resp.data)) {
+      List<dynamic> nodesList;
+      try {
+        nodesList = jsonDecode(resp.data);
+      } catch (e) {
+        debugPrint('failed to parse nodes list: ${resp.data}');
+        return;
+      }
+
+      for (final nodeId in nodesList) {
         if (_nodes[nodeId] == null && nodeId != '') {
           _nodes[nodeId] = NodeModel(nodeId);
 
@@ -92,7 +100,14 @@ class ConnectorModel extends ChangeNotifier {
     final reqString = '!/$nodeId/$path $paramsJson';
     final resp = await _client.request(reqString);
     if (resp.function.isChanged() && resp.data.isNotEmpty) {
-      return jsonDecode(resp.data);
+      dynamic payload;
+      try {
+        payload = jsonDecode(resp.data);
+      } catch (e) {
+        debugPrint('failed to parse exec response payload: $payload');
+        return;
+      }
+      return payload;
     }
   }
 
@@ -101,10 +116,14 @@ class ConnectorModel extends ChangeNotifier {
     final reqString = path.isEmpty ? '?/$nodeId' : '?/$nodeId/$path';
     final resp = await _client.request(reqString);
     if (resp.function.isContent()) {
-      final jsonData = jsonDecode(resp.data);
-      if (jsonData is Map) {
-        _nodes[nodeId]?.mergeReported(path, jsonData);
+      Map<String, dynamic> payload;
+      try {
+        payload = jsonDecode(resp.data);
+      } catch (e) {
+        debugPrint('failed to parse response payload: ${resp.data}');
+        return;
       }
+      _nodes[nodeId]?.mergeReported(path, payload);
     }
   }
 
