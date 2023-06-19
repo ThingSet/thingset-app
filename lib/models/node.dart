@@ -70,6 +70,25 @@ class NodeModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void _addTimeSeriesData(String name, double time, dynamic jsonValue) {
+    double value;
+    if (jsonValue is double) {
+      value = jsonValue;
+    } else if (jsonValue is bool) {
+      value = jsonValue ? 1 : 0;
+    } else {
+      return;
+    }
+
+    if (!_timeseries.containsKey(name)) {
+      _timeseries[name] = [];
+    }
+    _timeseries[name]!.add(FlSpot(time - _startTime, value));
+    if (_timeseries[name]!.length > 300) {
+      _timeseries[name]!.removeAt(0);
+    }
+  }
+
   void storeReport(String path, String payload) {
     // set path to empty string if subset was reported
     path = (path.isNotEmpty && path[0].toUpperCase() == path[0]) ? path : '';
@@ -90,30 +109,10 @@ class NodeModel extends ChangeNotifier {
       if (obj[key1] is Map) {
         /* supporting max. depth of 2 for now */
         for (final key2 in obj[key1].keys) {
-          if (obj[key1][key2] is double) {
-            //debugPrint('$prefix$key1/$key2 = ${obj[key1][key2]}');
-            if (!_timeseries.containsKey('$prefix$key1/$key2')) {
-              _timeseries['$prefix$key1/$key2'] = [];
-            }
-            _timeseries['$prefix$key1/$key2']!
-                .add(FlSpot(time - _startTime, obj[key1][key2]));
-            if (_timeseries['$prefix$key1/$key2']!.length > 300) {
-              _timeseries['$prefix$key1/$key2']!.removeAt(0);
-            }
-          }
+          _addTimeSeriesData('$prefix$key1/$key2', time, obj[key1][key2]);
         }
       } else {
-        if (obj[key1] is double) {
-          // debugPrint('$prefix$key1 = ${obj[key1]}');
-          if (!_timeseries.containsKey('$prefix$key1')) {
-            _timeseries['$prefix$key1'] = [];
-          }
-          _timeseries['$prefix$key1']!
-              .add(FlSpot(time - _startTime, obj[key1]));
-          if (_timeseries['$prefix$key1']!.length > 300) {
-            _timeseries['$prefix$key1']!.removeAt(0);
-          }
-        }
+        _addTimeSeriesData('$prefix$key1', time, obj[key1]);
       }
     }
     notifyListeners();
