@@ -93,7 +93,24 @@ class StatefulTextFieldState extends State<StatefulTextField> {
       keyboardType:
           widget.value is num ? TextInputType.number : TextInputType.text,
       inputFormatters: [
-        if (widget.value is num) FilteringTextInputFormatter.digitsOnly
+        if (widget.value is num)
+          FilteringTextInputFormatter.allow(RegExp('[0-9.-]')),
+        if (widget.value is num)
+          TextInputFormatter.withFunction(
+              (TextEditingValue oldValue, TextEditingValue newValue) {
+            if (['-', '-.', '.', ''].contains(newValue.text)) {
+              // allow starting with decimal dot or minus sign
+              return newValue;
+            } else {
+              // otherwise check if the value can be parsed into double
+              try {
+                double.parse(newValue.text);
+                return newValue;
+              } catch (e) {
+                return oldValue;
+              }
+            }
+          }),
       ],
     );
   }
