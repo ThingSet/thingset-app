@@ -112,10 +112,12 @@ class LiveView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<NodeModel>.value(
-      value: node,
-      child: Consumer<NodeModel>(
-        builder: (_, model, __) => LiveChart(node: node),
+    return SingleChildScrollView(
+      child: ChangeNotifierProvider<NodeModel>.value(
+        value: node,
+        child: Consumer<NodeModel>(
+          builder: (_, model, __) => LiveChart(node: node),
+        ),
       ),
     );
   }
