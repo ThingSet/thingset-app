@@ -426,6 +426,12 @@ class Subset extends StatelessWidget {
     descr = descr.replaceAllMapped(RegExp(r'([A-Z0-9])([A-Z][a-z])'),
         (Match m) => '${m.group(1)} ${m.group(2)}');
 
+    final subsetType = subsetName[0] == 'm'
+        ? 'Metrics'
+        : subsetName[0] == 'e'
+            ? 'Events'
+            : 'Attributes';
+
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: Card(
@@ -437,7 +443,7 @@ class Subset extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.all(15),
                   child: Text(
-                    '$descr Subset',
+                    '$descr $subsetType',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
