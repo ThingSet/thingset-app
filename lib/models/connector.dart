@@ -111,6 +111,18 @@ class ConnectorModel extends ChangeNotifier {
     }
   }
 
+  Future<void> pullNodeRoot(String nodeId) async {
+    // considering root objects static, so we only need to pull once at startup
+    if (nodes[nodeId] != null && nodes[nodeId]!.reported.isEmpty) {
+      await pull(nodeId, '');
+    }
+    if (nodes[nodeId] != null &&
+        (nodes[nodeId]!.reported['_Reporting'] == null ||
+            nodes[nodeId]!.reported['_Reporting'].isEmpty)) {
+      await pull(nodeId, '_Reporting');
+    }
+  }
+
   /// Retrieve data from node through the client
   Future<void> pull(String nodeId, String path) async {
     final reqString = path.isEmpty ? '?/$nodeId' : '?/$nodeId/$path';

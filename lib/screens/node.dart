@@ -54,24 +54,20 @@ class NodeScreenState extends State<NodeScreen> {
             ],
           ),
         ),
-        body: FutureBuilder<void>(
-          future: Future.wait([
-            connector.pull(node.id, ''),
-            connector.pull(node.id, '_Reporting'),
-          ]),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              switch (_selectedIndex) {
-                case 0:
-                  return NodeData(connector: connector, node: node);
-                default:
-                  return LiveView(connector: connector, node: node);
-              }
-            } else {
-              return const LinearProgressIndicator();
-            }
-          },
-        ),
+        body: (_selectedIndex == 0)
+            ? FutureBuilder<void>(
+                future: Future.wait([
+                  connector.pullNodeRoot(node.id),
+                ]),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    return NodeData(connector: connector, node: node);
+                  } else {
+                    return const LinearProgressIndicator();
+                  }
+                },
+              )
+            : LiveView(connector: connector, node: node),
         bottomNavigationBar: BottomNavigationBar(
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
