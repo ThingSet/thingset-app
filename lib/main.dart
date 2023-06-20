@@ -38,8 +38,8 @@ final _router = GoRouter(
         GoRoute(
           path: ':conn/:id',
           builder: (context, state) => NodeScreen(
-            connectorName: state.params['conn']!,
-            nodeId: state.params['id']!,
+            connectorName: state.pathParameters['conn']!,
+            nodeId: state.pathParameters['id']!,
           ),
         ),
       ],

@@ -1,5 +1,7 @@
+// Copyright (c) Libre Solar Technologies GmbH
+// SPDX-License-Identifier: GPL-3.0-only
 //
-// Time ranges: 1 min, 5 min, 15 min, 30 min, 1h, 3h
+// ToDo: Time ranges 1 min, 5 min, 15 min, 30 min, 1h, 3h
 //
 
 import 'package:fl_chart/fl_chart.dart';
@@ -76,20 +78,20 @@ class LiveChart extends StatelessWidget {
 
   LineChartData mainData() {
     return LineChartData(
-      lineTouchData: LineTouchData(enabled: false),
+      lineTouchData: const LineTouchData(enabled: false),
       gridData: FlGridData(
         show: false,
         drawVerticalLine: false,
         horizontalInterval: 1,
         verticalInterval: 1,
         getDrawingHorizontalLine: (value) {
-          return FlLine(
+          return const FlLine(
             color: Colors.grey,
             strokeWidth: 1,
           );
         },
         getDrawingVerticalLine: (value) {
-          return FlLine(
+          return const FlLine(
             color: Colors.grey,
             strokeWidth: 1,
           );
@@ -97,10 +99,10 @@ class LiveChart extends StatelessWidget {
       ),
       titlesData: FlTitlesData(
         show: true,
-        rightTitles: AxisTitles(
+        rightTitles: const AxisTitles(
           sideTitles: SideTitles(showTitles: false),
         ),
-        topTitles: AxisTitles(
+        topTitles: const AxisTitles(
           sideTitles: SideTitles(showTitles: false),
         ),
         bottomTitles: AxisTitles(
@@ -119,14 +121,14 @@ class LiveChart extends StatelessWidget {
       lineBarsData: [
         for (final series in node.selectedSeries)
           LineChartBarData(
-            spots: node.timeseries[series],
+            spots: node.timeseries[series]!,
             isCurved: true,
             gradient: LinearGradient(
               colors: gradientColors,
             ),
             barWidth: 3,
             isStrokeCapRound: true,
-            dotData: FlDotData(
+            dotData: const FlDotData(
               show: false,
             ),
           ),
