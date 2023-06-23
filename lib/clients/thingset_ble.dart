@@ -11,17 +11,19 @@ import 'package:mutex/mutex.dart';
 import 'thingset.dart';
 
 final Uuid uuidThingSetService =
-    Uuid.parse('00000001-5a19-4887-9c6a-14ad27bfc06d');
-final Uuid uuidThingSetRequest =
-    Uuid.parse('00000002-5a19-4887-9c6a-14ad27bfc06d');
-final Uuid uuidThingSetResponse =
-    Uuid.parse('00000003-5a19-4887-9c6a-14ad27bfc06d');
+    Uuid.parse('00000001-5423-4887-9c6a-14ad27bfc06d');
+final Uuid uuidThingSetDownlink =
+    Uuid.parse('00000002-5423-4887-9c6a-14ad27bfc06d');
+final Uuid uuidThingSetUplink =
+    Uuid.parse('00000003-5423-4887-9c6a-14ad27bfc06d');
 
-// SLIP protocol (RFC 1055) special characters
-const slipEnd = 0xC0;
-const slipEsc = 0xDB;
-const slipEscEnd = 0xDC;
-const slipEscEsc = 0xDD;
+// currently only supporting text mode, so not all of the values below are used
+const msgEnd = 0x0A;
+const msgSkip = 0x0D;
+const msgEsc = 0xCE;
+const msgEscEnd = 0xCA;
+const msgEscSkip = 0xCD;
+const msgEscEsc = 0xCF;
 
 class BleClient extends ThingSetClient {
   final FlutterReactiveBle _ble;
@@ -45,7 +47,9 @@ class BleClient extends ThingSetClient {
 
   void _processReceivedData(List<int> data) {
     for (final byte in data) {
-      if (byte == slipEnd) {
+      if (byte == msgSkip) {
+        // ignore skip character
+      } else if (byte == msgEnd) {
         if (_message.isNotEmpty) {
           final msg = parseThingSetMessage(_message);
           if (msg != null) {
@@ -56,7 +60,7 @@ class BleClient extends ThingSetClient {
             }
           }
           _message = '';
-        } // else: ignore character
+        } // else: ignore empty packet
       } else {
         _message += String.fromCharCode(byte);
       }
@@ -98,7 +102,7 @@ class BleClient extends ThingSetClient {
 
             _respCharacteristic = QualifiedCharacteristic(
                 serviceId: uuidThingSetService,
-                characteristicId: uuidThingSetResponse,
+                characteristicId: uuidThingSetUplink,
                 deviceId: event.deviceId);
 
             var respDataStream =
@@ -111,7 +115,7 @@ class BleClient extends ThingSetClient {
 
             _reqCharacteristic = QualifiedCharacteristic(
                 serviceId: uuidThingSetService,
-                characteristicId: uuidThingSetRequest,
+                characteristicId: uuidThingSetDownlink,
                 deviceId: event.deviceId);
 
             _connected = true;
@@ -156,7 +160,7 @@ class BleClient extends ThingSetClient {
       debugPrint('request: $msg');
       await _mutex.acquire();
 
-      List<int> encodedData = [slipEnd, ...utf8.encode(msg), slipEnd];
+      List<int> encodedData = [...utf8.encode(msg), msgEnd];
       for (var i = 0; i < encodedData.length; i += _mtu) {
         var end =
             (i + _mtu < encodedData.length) ? i + _mtu : encodedData.length;
