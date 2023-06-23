@@ -66,7 +66,17 @@ class NodeModel extends ChangeNotifier {
         obj = obj[chunk];
       }
     }
-    obj.addAll(jsonData);
+    if (jsonData is Map) {
+      for (final String key in jsonData.keys) {
+        if (key[0].toUpperCase() == key[0] &&
+            jsonData[key] is Map &&
+            obj[key] is Map) {
+          obj[key].addAll(jsonData[key]);
+        } else {
+          obj[key] = jsonData[key];
+        }
+      }
+    }
     notifyListeners();
   }
 
