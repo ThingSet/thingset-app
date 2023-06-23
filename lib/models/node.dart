@@ -72,8 +72,8 @@ class NodeModel extends ChangeNotifier {
 
   void _addTimeSeriesData(String name, double time, dynamic jsonValue) {
     double value;
-    if (jsonValue is double) {
-      value = jsonValue;
+    if (jsonValue is num) {
+      value = jsonValue.toDouble();
     } else if (jsonValue is bool) {
       value = jsonValue ? 1 : 0;
     } else {
