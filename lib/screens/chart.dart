@@ -10,6 +10,15 @@ import 'package:flutter/material.dart';
 import '../models/node.dart';
 import '../theme.dart';
 
+const colors = [
+  Color(0xff005e83),
+  Color(0xff00a072),
+  Color(0xfff7b500),
+  Color(0xffe06f00),
+  Color(0xffbb1f11),
+  Color(0xff883e8d),
+];
+
 class LiveChart extends StatelessWidget {
   final NodeModel node;
   final startTime = DateTime.now().millisecondsSinceEpoch;
@@ -20,6 +29,14 @@ class LiveChart extends StatelessWidget {
   ];
 
   LiveChart({super.key, required this.node});
+
+  Color _getChipColor(String name) {
+    if (node.selectedSeries.contains(name)) {
+      return colors[node.selectedSeries.indexOf(name) % colors.length];
+    } else {
+      return Colors.grey;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +69,7 @@ class LiveChart extends StatelessWidget {
                       }
                     },
                     showCheckmark: false,
+                    selectedColor: _getChipColor(name),
                   ))
               .toList(),
         ),
@@ -123,9 +141,8 @@ class LiveChart extends StatelessWidget {
           LineChartBarData(
             spots: node.timeseries[series]!,
             isCurved: true,
-            gradient: LinearGradient(
-              colors: gradientColors,
-            ),
+            preventCurveOverShooting: true,
+            color: colors[node.selectedSeries.indexOf(series) % colors.length],
             barWidth: 3,
             isStrokeCapRound: true,
             dotData: const FlDotData(
