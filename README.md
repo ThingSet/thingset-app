@@ -5,6 +5,8 @@ any device supporting the [ThingSet protocol](https://thingset.io).
 
 The connection can be direct (via Bluetooth) or through a cloud backend (via WebSockets).
 
+![Screenshot Smart Thermostat App](assets/screenshot-smart-thermostat.png)
+
 ## Run the app on a desktop computer
 
 ```
