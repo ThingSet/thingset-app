@@ -37,15 +37,16 @@ class ThingSetFunctionCode {
 }
 
 class ThingSetMessage {
-  late ThingSetFunctionCode function;
-  late String endpoint;
-  late String data;
+  ThingSetFunctionCode function;
+  String relPath;
+  String payload;
 
-  ThingSetMessage(this.function, this.endpoint, this.data);
+  ThingSetMessage(
+      {required this.function, required this.relPath, required this.payload});
 
   @override
   String toString() {
-    return '$function$endpoint $data';
+    return '$function$relPath $payload';
   }
 }
 
@@ -55,13 +56,21 @@ ThingSetMessage? parseThingSetMessage(String str) {
   matches = RegExp(respRegExp).firstMatch(str);
   if (matches != null && matches.groupCount == 2) {
     final function = ThingSetFunctionCode.fromString(matches[1]!);
-    return ThingSetMessage(function, '', matches[2]!);
+    return ThingSetMessage(
+      function: function,
+      relPath: '',
+      payload: matches[2]!,
+    );
   }
 
   matches = RegExp(reportRegExp).firstMatch(str);
   if (matches != null && matches.groupCount == 2) {
     final function = ThingSetFunctionCode('#'.codeUnitAt(0));
-    return ThingSetMessage(function, matches[1]!, matches[2]!);
+    return ThingSetMessage(
+      function: function,
+      relPath: matches[1]!,
+      payload: matches[2]!,
+    );
   }
 
   return null;

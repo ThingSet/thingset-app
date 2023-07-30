@@ -50,9 +50,9 @@ class ConnectorModel extends ChangeNotifier {
     if (resp.function.isContent()) {
       List<dynamic> nodesList;
       try {
-        nodesList = jsonDecode(resp.data);
+        nodesList = jsonDecode(resp.payload);
       } catch (e) {
-        debugPrint('failed to parse nodes list: ${resp.data}');
+        debugPrint('failed to parse nodes list: ${resp.payload}');
         return;
       }
 
@@ -99,10 +99,10 @@ class ConnectorModel extends ChangeNotifier {
     final paramsJson = jsonEncode(params);
     final reqString = '!/$nodeId/$path $paramsJson';
     final resp = await _client.request(reqString);
-    if (resp.function.isChanged() && resp.data.isNotEmpty) {
+    if (resp.function.isChanged() && resp.payload.isNotEmpty) {
       dynamic payload;
       try {
-        payload = jsonDecode(resp.data);
+        payload = jsonDecode(resp.payload);
       } catch (e) {
         debugPrint('failed to parse exec response payload: $payload');
         return;
@@ -130,9 +130,9 @@ class ConnectorModel extends ChangeNotifier {
     if (resp.function.isContent()) {
       Map<String, dynamic> payload;
       try {
-        payload = jsonDecode(resp.data);
+        payload = jsonDecode(resp.payload);
       } catch (e) {
-        debugPrint('failed to parse response payload: ${resp.data}');
+        debugPrint('failed to parse response payload: ${resp.payload}');
         return;
       }
       _nodes[nodeId]?.mergeReported(path, payload);
@@ -144,7 +144,7 @@ class ConnectorModel extends ChangeNotifier {
     _reportSubscription = _client.reports().listen((msg) {
       /* ToDo: support more nodes per connector */
       if (_nodes.isNotEmpty) {
-        _nodes[_nodes.keys.first]?.storeReport(msg.endpoint, msg.data);
+        _nodes[_nodes.keys.first]?.storeReport(msg.relPath, msg.payload);
       }
     });
   }

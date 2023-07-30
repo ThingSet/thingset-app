@@ -73,7 +73,11 @@ class WebSocketClient extends ThingSetClient {
       }
       _mutex.release();
     }
-    return ThingSetMessage(ThingSetFunctionCode.gatewayTimeout(), '', '');
+    return ThingSetMessage(
+      function: ThingSetFunctionCode.gatewayTimeout(),
+      relPath: '',
+      payload: '',
+    );
   }
 
   @override

@@ -153,7 +153,11 @@ class BleClient extends ThingSetClient {
         if (msgRel != null) {
           msg = msgRel;
         } else {
-          return ThingSetMessage(ThingSetFunctionCode.badRequest(), '', '');
+          return ThingSetMessage(
+            function: ThingSetFunctionCode.badRequest(),
+            relPath: '',
+            payload: '',
+          );
         }
       }
 
@@ -183,7 +187,11 @@ class BleClient extends ThingSetClient {
       }
       _mutex.release();
     }
-    return ThingSetMessage(ThingSetFunctionCode.gatewayTimeout(), '', '');
+    return ThingSetMessage(
+      function: ThingSetFunctionCode.gatewayTimeout(),
+      relPath: '',
+      payload: '',
+    );
   }
 
   @override
