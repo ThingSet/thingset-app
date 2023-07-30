@@ -157,8 +157,9 @@ List<Widget> _listDataObjects(
   String path,
   Map<String, dynamic> data,
 ) {
+  var keys = data.keys.where((element) => element.isNotEmpty);
   var list = <Widget>[
-    for (final item in data.keys)
+    for (final item in keys)
       if (item[0].toUpperCase() == item[0] && item[0] != '_')
         DataGroup(
           connector: connector,
@@ -191,7 +192,7 @@ List<Widget> _listDataObjects(
   ];
 
   List<String> tags = [];
-  for (final item in data.keys) {
+  for (final item in keys) {
     if (item[0] == 'o') {
       tags.add('${item.substring(1)}: ${data[item]}');
     }
