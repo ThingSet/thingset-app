@@ -50,14 +50,22 @@ class ThingSetMessage {
   }
 }
 
+String getRelPath(String path) {
+  if (path.isNotEmpty && path[0] == '/') {
+    final chunks = path.split('/');
+    return chunks.length > 2 ? chunks.sublist(2).join('/') : '';
+  } else {
+    return path;
+  }
+}
+
 ThingSetMessage? parseThingSetMessage(String str) {
   dynamic matches;
 
   matches = RegExp(respRegExp).firstMatch(str);
   if (matches != null && matches.groupCount == 2) {
-    final function = ThingSetFunctionCode.fromString(matches[1]!);
     return ThingSetMessage(
-      function: function,
+      function: ThingSetFunctionCode.fromString(matches[1]!),
       relPath: '',
       payload: matches[2]!,
     );
@@ -65,10 +73,9 @@ ThingSetMessage? parseThingSetMessage(String str) {
 
   matches = RegExp(reportRegExp).firstMatch(str);
   if (matches != null && matches.groupCount == 2) {
-    final function = ThingSetFunctionCode('#'.codeUnitAt(0));
     return ThingSetMessage(
-      function: function,
-      relPath: matches[1]!,
+      function: ThingSetFunctionCode('#'.codeUnitAt(0)),
+      relPath: getRelPath(matches[1]!),
       payload: matches[2]!,
     );
   }
@@ -94,12 +101,8 @@ abstract class ThingSetClient {
       final type = matches[1]!;
       final absPath = matches[2]!;
       final data = matches[3]!;
-      final chunks = absPath.split('/');
-      if (chunks.length > 1) {
-        // remove nodeId in chunks[1]
-        String relPath = chunks.length > 2 ? chunks.sublist(2).join('/') : '';
-        return '$type$relPath $data';
-      }
+      final relPath = getRelPath(absPath);
+      return '$type$relPath $data';
     }
     return null;
   }
