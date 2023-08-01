@@ -160,7 +160,11 @@ List<Widget> _listDataObjects(
   var keys = data.keys.where((element) => element.isNotEmpty);
   var list = <Widget>[
     for (final item in keys)
-      if (item[0].toUpperCase() == item[0] && item[0] != '_')
+      if (item[0].toUpperCase() == item[0] &&
+          item[0] != '_' &&
+          data[item] is int)
+        DataRecords(name: item)
+      else if (item[0].toUpperCase() == item[0] && item[0] != '_')
         DataGroup(
           connector: connector,
           node: node,
@@ -209,6 +213,42 @@ List<Widget> _listDataObjects(
   }
 
   return list;
+}
+
+class DataRecords extends StatelessWidget {
+  final String name;
+
+  const DataRecords({
+    super.key,
+    required this.name,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: Card(
+        child: ExpansionTile(
+          controlAffinity: ListTileControlAffinity.leading,
+          title: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Text(
+              name,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          children: const <Widget>[
+            Padding(
+              padding: EdgeInsets.all(10),
+              child: Text('Records not yet supported by UI'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class DataGroup extends StatelessWidget {
