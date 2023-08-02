@@ -1,5 +1,5 @@
-// Copyright (c) Libre Solar Technologies GmbH
-// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (c) The ThingSet Project Contributors
+// SPDX-License-Identifier: Apache-2.0
 //
 // ToDo: Time ranges 1 min, 5 min, 15 min, 30 min, 1h, 3h
 //

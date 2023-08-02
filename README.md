@@ -13,22 +13,6 @@ The connection can be direct (via Bluetooth) or through a cloud backend (via Web
 flutter run -d linux
 ```
 
-## Contributions
-
-We currently don't accept external contributions to this repository to reserve
-the right to distribute the software under a different license, as required for
-the Apple App Store.
-
 ## License
 
-The ThingSet App is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3 as published by
-the Free Software Foundation.
-
-The ThingSet App is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
-
-A copy of the GNU General Public License can be found in the
-[LICENSE](LICENSE) file of this repository.
+This software is released under the [Apache-2.0 License](LICENSE).

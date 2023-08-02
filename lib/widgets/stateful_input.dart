@@ -1,5 +1,5 @@
-// Copyright (c) Libre Solar Technologies GmbH
-// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (c) The ThingSet Project Contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
