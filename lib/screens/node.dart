@@ -313,7 +313,7 @@ class DataGroup extends StatelessWidget {
           title: Padding(
             padding: const EdgeInsets.all(10),
             child: Text(
-              groupName,
+              splitCamelCaseName(groupName),
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
               ),
@@ -349,6 +349,15 @@ const unitFix = {
   'm3': 'm³',
 };
 
+String splitCamelCaseName(String name) {
+  name = name.replaceAllMapped(
+      RegExp(r'([a-z])([A-Z0-9])'), (Match m) => '${m.group(1)} ${m.group(2)}');
+  name = name.replaceAllMapped(RegExp(r'([A-Z0-9])([A-Z][a-z])'),
+      (Match m) => '${m.group(1)} ${m.group(2)}');
+
+  return name;
+}
+
 class DataItem extends StatelessWidget {
   final ConnectorModel connector;
   final NodeModel node;
@@ -377,12 +386,7 @@ class DataItem extends StatelessWidget {
       unit = unitFix[unit]!;
     }
 
-    // split camel case name
-    var descr = chunks[0].substring(1);
-    descr = descr.replaceAllMapped(RegExp(r'([a-z])([A-Z0-9])'),
-        (Match m) => '${m.group(1)} ${m.group(2)}');
-    descr = descr.replaceAllMapped(RegExp(r'([A-Z0-9])([A-Z][a-z])'),
-        (Match m) => '${m.group(1)} ${m.group(2)}');
+    var descr = splitCamelCaseName(chunks[0].substring(1));
 
     if (itemName[0] == 'x') {
       Widget? paramsWidget;
@@ -460,12 +464,7 @@ class Subset extends StatelessWidget {
   Widget build(BuildContext context) {
     final chunks = subsetName.split('_');
 
-    // split camel case name
-    var descr = chunks[0].substring(1);
-    descr = descr.replaceAllMapped(RegExp(r'([a-z])([A-Z0-9])'),
-        (Match m) => '${m.group(1)} ${m.group(2)}');
-    descr = descr.replaceAllMapped(RegExp(r'([A-Z0-9])([A-Z][a-z])'),
-        (Match m) => '${m.group(1)} ${m.group(2)}');
+    var descr = splitCamelCaseName(chunks[0].substring(1));
 
     final subsetType = subsetName[0] == 'm'
         ? 'Metrics'
