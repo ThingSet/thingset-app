@@ -534,6 +534,8 @@ Future<void> _reportingSetupDialog(
     String groupName,
     String path) async {
   await connector.pull(node.id, path);
+  // ignore: use_build_context_synchronously
+  if (!context.mounted) return;
   return showDialog<void>(
     context: context,
     builder: (BuildContext context) {
@@ -562,6 +564,7 @@ Future<void> _reportingSetupDialog(
                     await connector.push(node.id, path);
                   }
                   // ignore: use_build_context_synchronously
+                  if (!context.mounted) return;
                   Navigator.of(context).pop();
                 },
               ),
