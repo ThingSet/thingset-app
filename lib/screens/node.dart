@@ -321,12 +321,15 @@ class DataGroup extends StatelessWidget {
           ),
           children: <Widget>[
             if (data != null)
-              ..._listDataObjects(
-                context,
-                connector,
-                node,
-                path,
-                data,
+              ...ListTile.divideTiles(
+                context: context,
+                tiles: _listDataObjects(
+                  context,
+                  connector,
+                  node,
+                  path,
+                  data,
+                ),
               )
           ],
           onExpansionChanged: (value) async {
