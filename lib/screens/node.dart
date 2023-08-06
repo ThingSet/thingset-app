@@ -361,6 +361,19 @@ String splitCamelCaseName(String name) {
   return name;
 }
 
+String parseUnit(String name) {
+  final chunks = name.split('_');
+
+  var unit = chunks.length > 1
+      ? chunks[1] + (chunks.length > 2 ? '/${chunks[2]}' : '')
+      : '';
+  if (unitFix.containsKey(unit)) {
+    unit = unitFix[unit]!;
+  }
+
+  return unit;
+}
+
 class DataItem extends StatelessWidget {
   final ConnectorModel connector;
   final NodeModel node;
@@ -379,17 +392,8 @@ class DataItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chunks = itemName.split('_');
-
-    // parse unit
-    var unit = chunks.length > 1
-        ? chunks[1] + (chunks.length > 2 ? '/${chunks[2]}' : '')
-        : '';
-    if (unitFix.containsKey(unit)) {
-      unit = unitFix[unit]!;
-    }
-
-    var descr = splitCamelCaseName(chunks[0].substring(1));
+    var descr = splitCamelCaseName(itemName.split('_').first.substring(1));
+    var unit = parseUnit(itemName);
 
     if (itemName[0] == 'x') {
       Widget? paramsWidget;
@@ -465,9 +469,7 @@ class Subset extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chunks = subsetName.split('_');
-
-    var descr = splitCamelCaseName(chunks[0].substring(1));
+    var descr = splitCamelCaseName(subsetName.split('_').first.substring(1));
 
     final subsetType = subsetName[0] == 'm'
         ? 'Metrics'
