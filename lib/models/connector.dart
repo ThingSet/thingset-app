@@ -92,23 +92,14 @@ class ConnectorModel extends ChangeNotifier {
   }
 
   /// Update data in the node based on desired state
-  Future<dynamic> exec(String nodeId, String path, List params) async {
+  Future<ThingSetMessage?> exec(String nodeId, String path, List params) async {
     if (path.isEmpty) {
-      return;
+      return null;
     }
     final paramsJson = jsonEncode(params);
     final reqString = '!/$nodeId/$path $paramsJson';
     final resp = await _client.request(reqString);
-    if (resp.function.isChanged() && resp.payload.isNotEmpty) {
-      dynamic payload;
-      try {
-        payload = jsonDecode(resp.payload);
-      } catch (e) {
-        debugPrint('failed to parse exec response payload: $payload');
-        return;
-      }
-      return payload;
-    }
+    return resp;
   }
 
   Future<void> pullNodeRoot(String nodeId) async {

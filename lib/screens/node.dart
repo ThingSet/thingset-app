@@ -390,29 +390,131 @@ class DataItem extends StatelessWidget {
     required this.data,
   });
 
+  Future<void> execRequest(
+      BuildContext context, String descr, List<dynamic> values) async {
+    var resp = await connector.exec(node.id, path, values);
+    String msg = 'Execution failed.';
+    if (resp != null) {
+      if (resp.function.isChanged()) {
+        if (resp.payload.isNotEmpty) {
+          msg = 'Request executed with response data: ${resp.payload}';
+        } else {
+          msg = 'Request executed successfully.';
+        }
+      } else {
+        var code = resp.function
+            .asInt()
+            .toRadixString(16)
+            .padLeft(2, '0')
+            .toUpperCase();
+        msg = 'Received response with error code: $code';
+      }
+    }
+    // ignore: use_build_context_synchronously
+    await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: Text(descr),
+        content: Text(msg),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'OK'),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget execItem(BuildContext context, String descr) {
+    if (data is List &&
+        data.isNotEmpty &&
+        data.every((element) => element is String && element.isNotEmpty)) {
+      var paramNames = List<String>.from(data);
+      List<dynamic> values = List.generate(paramNames.length, (int i) {
+        switch (paramNames[i][0]) {
+          case 'n':
+          case 'i':
+            return 0;
+          case 'f':
+            return 0.0;
+          case 'l':
+            return false;
+          default:
+            return '';
+        }
+      });
+      return ListTile(
+        title: ElevatedButton(
+          child: Text(descr),
+          onPressed: () async {
+            await execRequest(context, descr, values);
+          },
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            for (var i = 0; i < paramNames.length; i++)
+              if (paramNames[i][0] == 'n' ||
+                  paramNames[i][0] == 'i' ||
+                  paramNames[i][0] == 'f' ||
+                  paramNames[i][0] == 'u')
+                ListTile(
+                  title: Text(
+                    splitCamelCaseName(
+                        paramNames[i].split('_').first.substring(1)),
+                  ),
+                  trailing: ConstrainedBox(
+                    constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.4),
+                    child: StatefulTextField(
+                      value: values[i],
+                      unit: parseUnit(paramNames[i]),
+                      onChanged: (value) {
+                        values[i] = value;
+                      },
+                    ),
+                  ),
+                )
+              else if (paramNames[i][0] == 'l')
+                ListTile(
+                  title: Text(
+                    splitCamelCaseName(
+                        paramNames[i].split('_').first.substring(1)),
+                  ),
+                  trailing: ConstrainedBox(
+                    constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.4),
+                    child: StatefulSwitch(
+                      value: values[i],
+                      onChanged: (value) {
+                        values[i] = value;
+                      },
+                    ),
+                  ),
+                )
+          ],
+        ),
+      );
+    } else {
+      return ListTile(
+        title: ElevatedButton(
+          child: Text(descr),
+          onPressed: () async {
+            await execRequest(context, descr, []);
+          },
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var descr = splitCamelCaseName(itemName.split('_').first.substring(1));
     var unit = parseUnit(itemName);
 
     if (itemName[0] == 'x') {
-      Widget? paramsWidget;
-      if (data is List && data.isNotEmpty) {
-        paramsWidget = ConstrainedBox(
-          constraints:
-              BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.4),
-          child: Text('$data'),
-        );
-      }
-      return ListTile(
-        title: ElevatedButton(
-          child: Text(descr),
-          onPressed: () {
-            connector.exec(node.id, path, []);
-          },
-        ),
-        trailing: paramsWidget,
-      );
+      return execItem(context, descr);
     } else {
       Widget valueWidget;
       if (itemName[0] == 'w' || itemName[0] == 's') {
