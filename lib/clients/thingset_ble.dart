@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:mutex/mutex.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'thingset.dart';
 
@@ -40,7 +41,9 @@ class BleClient extends ThingSetClient {
   final _reports = StreamController<ThingSetMessage>.broadcast();
   int _mtu = 20;
 
-  BleClient(this._ble, this._deviceId) : super('Bluetooth');
+  BleClient(this._deviceId)
+      : _ble = FlutterReactiveBle(),
+        super('Bluetooth');
 
   @override
   String get id => _deviceId;
@@ -204,5 +207,53 @@ class BleClient extends ThingSetClient {
     await _rxStreamSubscription?.cancel();
     await _connection?.cancel();
     _connected = false;
+  }
+}
+
+class BleScanner extends ChangeNotifier {
+  final FlutterReactiveBle _ble;
+  final List<DiscoveredDevice> _discoveredDevices = [];
+  Stream? _scanStream;
+  StreamSubscription? _scanStreamSubscription;
+
+  BleScanner(this._ble);
+
+  List<DiscoveredDevice> get devices => _discoveredDevices;
+
+  Future<void> startScanning() async {
+    await [
+      Permission.bluetoothScan,
+      Permission.bluetoothConnect,
+      Permission.locationWhenInUse,
+    ].request();
+
+    _scanStream = _ble.scanForDevices(
+      withServices: [uuidThingSetService],
+      scanMode: ScanMode.lowLatency,
+      requireLocationServicesEnabled: false,
+    );
+
+    _scanStreamSubscription = _scanStream!.listen(
+      (device) {
+        if (_discoveredDevices
+            .every((discovered) => discovered.id != device.id)) {
+          debugPrint('New ThingSet node found: ${device.toString()}');
+          _discoveredDevices.add(device);
+          notifyListeners();
+        }
+      },
+      onError: (err) {
+        debugPrint('BLE error: $err');
+        // ToDo: Handle error.
+      },
+    );
+  }
+
+  void stopScanning() async {
+    await _scanStreamSubscription?.cancel();
+  }
+
+  void clear() {
+    _discoveredDevices.clear();
   }
 }

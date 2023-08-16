@@ -2,13 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import 'dart:async';
-import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
 import 'connector.dart';
-import 'ble_scanner.dart';
 
 import '../clients/thingset_ble.dart';
 import '../clients/thingset_serial.dart';
@@ -18,19 +15,6 @@ class AppModel extends ChangeNotifier {
   /// Map of all connectors supported by the app
   final Map<String, ConnectorModel> _connectors = {};
 
-  /// Global Bluetooth interface (only used in mobile apps)
-  FlutterReactiveBle? ble;
-
-  /// Bluetooth scanner (only used in mobile apps)
-  BleScanner? scanner;
-
-  AppModel() {
-    if (Platform.isIOS || Platform.isAndroid) {
-      ble = FlutterReactiveBle();
-      scanner = BleScanner(ble!);
-    }
-  }
-
   List<String> get connectorNames => _connectors.keys.toList();
 
   Map<String, ConnectorModel> get connectors => _connectors;
@@ -39,7 +23,7 @@ class AppModel extends ChangeNotifier {
 
   Future<String?> addBleConnector(String bleDeviceId) async {
     String name = 'ble_${bleDeviceId.replaceAll(':', '')}';
-    var bleClient = BleClient(ble!, bleDeviceId);
+    var bleClient = BleClient(bleDeviceId);
     var model = ConnectorModel(bleClient);
     try {
       await model.connect().timeout(const Duration(seconds: 3));
