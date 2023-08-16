@@ -5,12 +5,13 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_libserialport/flutter_libserialport.dart';
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../clients/thingset_ble.dart';
 import '../models/app.dart';
-import '../models/ble_scanner.dart';
 import '../models/connector.dart';
 import '../widgets/stateful_input.dart';
 
@@ -179,11 +180,6 @@ class HomeScreen extends StatelessWidget {
           ],
         );
       },
-    ).then(
-      (value) {
-        // make sure we stop scanning when the dialog is closed
-        appModel.scanner?.stopScanning();
-      },
     );
   }
 
@@ -228,19 +224,15 @@ class HomeScreen extends StatelessWidget {
           ],
         );
       },
-    ).then(
-      (value) {
-        // make sure we stop scanning when the dialog is closed
-        appModel.scanner?.stopScanning();
-      },
     );
   }
 
   Future<void> _bleScanDialog(BuildContext context, AppModel appModel) {
+    var ble = FlutterReactiveBle();
+    var bleScanner = BleScanner(ble);
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
-        var bleScanner = appModel.scanner!;
         bleScanner.clear();
         return SimpleDialog(
           title: const Text('Bluetooth Scan'),
@@ -297,7 +289,7 @@ class HomeScreen extends StatelessWidget {
     ).then(
       (value) {
         // make sure we stop scanning when the dialog is closed
-        appModel.scanner?.stopScanning();
+        bleScanner.stopScanning();
       },
     );
   }
