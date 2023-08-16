@@ -27,7 +27,7 @@ const msgEscEsc = 0xCF;
 
 class BleClient extends ThingSetClient {
   final FlutterReactiveBle _ble;
-  final DiscoveredDevice _device;
+  final String _deviceId;
   final _mutex = Mutex();
   Stream? _connectionStream;
   StreamSubscription? _connection;
@@ -40,10 +40,10 @@ class BleClient extends ThingSetClient {
   final _reports = StreamController<ThingSetMessage>.broadcast();
   int _mtu = 20;
 
-  BleClient(this._ble, this._device) : super('Bluetooth');
+  BleClient(this._ble, this._deviceId) : super('Bluetooth');
 
   @override
-  String get id => _device.id.toString();
+  String get id => _deviceId;
 
   void _processReceivedData(List<int> data) {
     for (final byte in data) {
@@ -80,7 +80,7 @@ class BleClient extends ThingSetClient {
 
     try {
       _connectionStream = _ble.connectToAdvertisingDevice(
-        id: _device.id,
+        id: _deviceId,
         prescanDuration: const Duration(seconds: 2),
         withServices: [uuidThingSetService],
         connectionTimeout: const Duration(seconds: 3),
@@ -133,7 +133,7 @@ class BleClient extends ThingSetClient {
 
       await completer.future;
 
-      _mtu = await _ble.requestMtu(deviceId: _device.id, mtu: 250);
+      _mtu = await _ble.requestMtu(deviceId: _deviceId, mtu: 250);
     } catch (error) {
       debugPrint('listen error: ${error.toString()}');
       completer.completeError(error);
