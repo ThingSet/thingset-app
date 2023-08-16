@@ -9,9 +9,6 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../clients/thingset_ble.dart';
-import '../clients/thingset_serial.dart';
-import '../clients/thingset_ws.dart';
 import '../models/app.dart';
 import '../models/ble_scanner.dart';
 import '../models/connector.dart';
@@ -166,15 +163,7 @@ class HomeScreen extends StatelessWidget {
                   child: const Text('Add'),
                   onPressed: () async {
                     Navigator.of(context).pop();
-                    var websocketClient = WebSocketClient(uri);
-                    String connectorName =
-                        'ws_${uri.replaceAll(RegExp(r'/|:|\.'), '_')}';
-                    await appModel
-                        .addConnector(
-                            connectorName, ConnectorModel(websocketClient))
-                        .timeout(const Duration(seconds: 3),
-                            onTimeout: () async =>
-                                await appModel.deleteConnector(connectorName));
+                    await appModel.addWebSocketConnector(uri);
                   },
                 ),
                 TextButton(
@@ -217,15 +206,7 @@ class HomeScreen extends StatelessWidget {
                     title: Text(serialPorts[index]),
                     onTap: () async {
                       Navigator.of(context).pop();
-                      var serialClient = SerialClient(serialPorts[index]);
-                      String connectorName =
-                          'serial_${serialPorts[index].replaceAll('/', '_')}';
-                      await appModel
-                          .addConnector(
-                              connectorName, ConnectorModel(serialClient))
-                          .timeout(const Duration(seconds: 3),
-                              onTimeout: () async => await appModel
-                                  .deleteConnector(connectorName));
+                      await appModel.addSerialConnector(serialPorts[index]);
                     },
                   );
                 },
@@ -280,16 +261,8 @@ class HomeScreen extends StatelessWidget {
                         onTap: () async {
                           bleScanner.stopScanning();
                           Navigator.of(context).pop();
-                          var bleDevice = bleScanner.devices[index];
-                          var bleClient = BleClient(appModel.ble!, bleDevice);
-                          String connectorName =
-                              'ble_${bleDevice.id.replaceAll(':', '')}';
                           await appModel
-                              .addConnector(
-                                  connectorName, ConnectorModel(bleClient))
-                              .timeout(const Duration(seconds: 3),
-                                  onTimeout: () async => await appModel
-                                      .deleteConnector(connectorName));
+                              .addBleConnector(bleScanner.devices[index].id);
                         },
                       );
                     },
