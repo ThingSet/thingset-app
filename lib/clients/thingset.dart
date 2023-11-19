@@ -5,6 +5,37 @@ const reqRegExp = r'^([?=+\-!])([^ ]*) *(.*)$';
 const respRegExp = r'^:([0-9A-F]*)[^ ]* ?(.*)$';
 const reportRegExp = r'^#([^ ]*) (.*)$';
 
+// correct UTF-8 string for units simplified for ThingSet
+const unitFix = {
+  'deg': '°',
+  'degC': '°C',
+  'pct': '%',
+  'm2': 'm²',
+  'm3': 'm³',
+};
+
+String thingsetSplitCamelCaseName(String name) {
+  name = name.replaceAllMapped(
+      RegExp(r'([a-z])([A-Z0-9])'), (Match m) => '${m.group(1)} ${m.group(2)}');
+  name = name.replaceAllMapped(RegExp(r'([A-Z0-9])([A-Z][a-z])'),
+      (Match m) => '${m.group(1)} ${m.group(2)}');
+
+  return name;
+}
+
+String thingsetParseUnit(String name) {
+  final chunks = name.split('_');
+
+  var unit = chunks.length > 1
+      ? chunks[1] + (chunks.length > 2 ? '/${chunks[2]}' : '')
+      : '';
+  if (unitFix.containsKey(unit)) {
+    unit = unitFix[unit]!;
+  }
+
+  return unit;
+}
+
 class ThingSetFunctionCode {
   final int _code;
 
