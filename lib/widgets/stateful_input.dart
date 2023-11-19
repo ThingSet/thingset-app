@@ -4,6 +4,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../clients/thingset.dart';
+
 class StatefulSwitch extends StatefulWidget {
   final bool value;
   final void Function(bool) onChanged;
@@ -112,6 +114,116 @@ class StatefulTextFieldState extends State<StatefulTextField> {
             }
           }),
       ],
+    );
+  }
+}
+
+class StatefulExec extends StatefulWidget {
+  final dynamic params;
+  final String description;
+  final void Function(List<dynamic>) onPressed;
+
+  const StatefulExec({
+    super.key,
+    required this.params,
+    required this.description,
+    required this.onPressed,
+  });
+
+  @override
+  State<StatefulWidget> createState() => StatefulExecState();
+}
+
+class StatefulExecState extends State<StatefulExec> {
+  List<dynamic> _paramValues = [];
+  List<String> _paramNames = [];
+
+  @override
+  void initState() {
+    if (widget.params is List &&
+        widget.params.isNotEmpty &&
+        widget.params
+            .every((element) => element is String && element.isNotEmpty)) {
+      _paramNames = List<String>.from(widget.params);
+      _paramValues = List.generate(_paramNames.length, (int i) {
+        switch (_paramNames[i][0]) {
+          case 'n':
+          case 'i':
+            return 0;
+          case 'f':
+            return 0.0;
+          case 'l':
+            return false;
+          default:
+            return '';
+        }
+      });
+    }
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget? paramsWidget;
+    if (_paramNames.isNotEmpty) {
+      paramsWidget = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          for (var i = 0; i < _paramNames.length; i++)
+            if (_paramNames[i][0] == 'n' ||
+                _paramNames[i][0] == 'i' ||
+                _paramNames[i][0] == 'f' ||
+                _paramNames[i][0] == 'u')
+              ListTile(
+                title: Text(
+                  thingsetSplitCamelCaseName(
+                      _paramNames[i].split('_').first.substring(1)),
+                ),
+                trailing: ConstrainedBox(
+                  constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.4),
+                  child: StatefulTextField(
+                    value: _paramValues[i],
+                    unit: thingsetParseUnit(_paramNames[i]),
+                    onChanged: (value) {
+                      _paramValues[i] = value;
+                    },
+                  ),
+                ),
+              )
+            else if (_paramNames[i][0] == 'l')
+              ListTile(
+                title: Text(
+                  thingsetSplitCamelCaseName(
+                      _paramNames[i].split('_').first.substring(1)),
+                ),
+                trailing: ConstrainedBox(
+                  constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.4),
+                  child: StatefulSwitch(
+                    value: _paramValues[i],
+                    onChanged: (value) {
+                      _paramValues[i] = value;
+                    },
+                  ),
+                ),
+              )
+        ],
+      );
+    }
+    return ListTile(
+      title: ElevatedButton(
+        child: Text(widget.description),
+        onPressed: () {
+          widget.onPressed(_paramValues);
+        },
+      ),
+      subtitle: paramsWidget,
     );
   }
 }
