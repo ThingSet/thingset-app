@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../models/app.dart';
 import '../models/connector.dart';
 import '../models/node.dart';
+import '../clients/thingset.dart';
 import '../theme.dart';
 import '../widgets/stateful_input.dart';
 import 'chart.dart';
@@ -313,7 +314,7 @@ class DataGroup extends StatelessWidget {
           title: Padding(
             padding: const EdgeInsets.all(10),
             child: Text(
-              splitCamelCaseName(groupName),
+              thingsetSplitCamelCaseName(groupName),
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
               ),
@@ -341,37 +342,6 @@ class DataGroup extends StatelessWidget {
       ),
     );
   }
-}
-
-// correct UTF-8 string for units simplified for ThingSet
-const unitFix = {
-  'deg': '°',
-  'degC': '°C',
-  'pct': '%',
-  'm2': 'm²',
-  'm3': 'm³',
-};
-
-String splitCamelCaseName(String name) {
-  name = name.replaceAllMapped(
-      RegExp(r'([a-z])([A-Z0-9])'), (Match m) => '${m.group(1)} ${m.group(2)}');
-  name = name.replaceAllMapped(RegExp(r'([A-Z0-9])([A-Z][a-z])'),
-      (Match m) => '${m.group(1)} ${m.group(2)}');
-
-  return name;
-}
-
-String parseUnit(String name) {
-  final chunks = name.split('_');
-
-  var unit = chunks.length > 1
-      ? chunks[1] + (chunks.length > 2 ? '/${chunks[2]}' : '')
-      : '';
-  if (unitFix.containsKey(unit)) {
-    unit = unitFix[unit]!;
-  }
-
-  return unit;
 }
 
 class DataItem extends StatelessWidget {
@@ -461,7 +431,7 @@ class DataItem extends StatelessWidget {
                   paramNames[i][0] == 'u')
                 ListTile(
                   title: Text(
-                    splitCamelCaseName(
+                    thingsetSplitCamelCaseName(
                         paramNames[i].split('_').first.substring(1)),
                   ),
                   trailing: ConstrainedBox(
@@ -469,7 +439,7 @@ class DataItem extends StatelessWidget {
                         maxWidth: MediaQuery.of(context).size.width * 0.4),
                     child: StatefulTextField(
                       value: values[i],
-                      unit: parseUnit(paramNames[i]),
+                      unit: thingsetParseUnit(paramNames[i]),
                       onChanged: (value) {
                         values[i] = value;
                       },
@@ -479,7 +449,7 @@ class DataItem extends StatelessWidget {
               else if (paramNames[i][0] == 'l')
                 ListTile(
                   title: Text(
-                    splitCamelCaseName(
+                    thingsetSplitCamelCaseName(
                         paramNames[i].split('_').first.substring(1)),
                   ),
                   trailing: ConstrainedBox(
@@ -510,8 +480,9 @@ class DataItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var descr = splitCamelCaseName(itemName.split('_').first.substring(1));
-    var unit = parseUnit(itemName);
+    var descr =
+        thingsetSplitCamelCaseName(itemName.split('_').first.substring(1));
+    var unit = thingsetParseUnit(itemName);
 
     if (itemName[0] == 'x') {
       return execItem(context, descr);
@@ -571,7 +542,8 @@ class Subset extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var descr = splitCamelCaseName(subsetName.split('_').first.substring(1));
+    var descr =
+        thingsetSplitCamelCaseName(subsetName.split('_').first.substring(1));
 
     final subsetType = subsetName[0] == 'm'
         ? 'Metrics'
