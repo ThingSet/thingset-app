@@ -396,88 +396,6 @@ class DataItem extends StatelessWidget {
     );
   }
 
-  Widget execItem(BuildContext context, String descr) {
-    if (data is List &&
-        data.isNotEmpty &&
-        data.every((element) => element is String && element.isNotEmpty)) {
-      var paramNames = List<String>.from(data);
-      List<dynamic> values = List.generate(paramNames.length, (int i) {
-        switch (paramNames[i][0]) {
-          case 'n':
-          case 'i':
-            return 0;
-          case 'f':
-            return 0.0;
-          case 'l':
-            return false;
-          default:
-            return '';
-        }
-      });
-      return ListTile(
-        title: ElevatedButton(
-          child: Text(descr),
-          onPressed: () async {
-            await execRequest(context, descr, values);
-          },
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            for (var i = 0; i < paramNames.length; i++)
-              if (paramNames[i][0] == 'n' ||
-                  paramNames[i][0] == 'i' ||
-                  paramNames[i][0] == 'f' ||
-                  paramNames[i][0] == 'u')
-                ListTile(
-                  title: Text(
-                    thingsetSplitCamelCaseName(
-                        paramNames[i].split('_').first.substring(1)),
-                  ),
-                  trailing: ConstrainedBox(
-                    constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.4),
-                    child: StatefulTextField(
-                      value: values[i],
-                      unit: thingsetParseUnit(paramNames[i]),
-                      onChanged: (value) {
-                        values[i] = value;
-                      },
-                    ),
-                  ),
-                )
-              else if (paramNames[i][0] == 'l')
-                ListTile(
-                  title: Text(
-                    thingsetSplitCamelCaseName(
-                        paramNames[i].split('_').first.substring(1)),
-                  ),
-                  trailing: ConstrainedBox(
-                    constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.4),
-                    child: StatefulSwitch(
-                      value: values[i],
-                      onChanged: (value) {
-                        values[i] = value;
-                      },
-                    ),
-                  ),
-                )
-          ],
-        ),
-      );
-    } else {
-      return ListTile(
-        title: ElevatedButton(
-          child: Text(descr),
-          onPressed: () async {
-            await execRequest(context, descr, []);
-          },
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     var descr =
@@ -485,7 +403,13 @@ class DataItem extends StatelessWidget {
     var unit = thingsetParseUnit(itemName);
 
     if (itemName[0] == 'x') {
-      return execItem(context, descr);
+      return StatefulExec(
+        params: data,
+        description: descr,
+        onPressed: (values) async {
+          await execRequest(context, descr, values);
+        },
+      );
     } else {
       Widget valueWidget;
       if (itemName[0] == 'w' || itemName[0] == 's') {
