@@ -131,7 +131,7 @@ class HomeScreen extends StatelessWidget {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
-        String uri = 'wss://user:password@host:port/app';
+        String uri = 'ws://127.0.0.1:8000/app';
         return SimpleDialog(
           title: const Text('Connect WebSocket'),
           children: <Widget>[
