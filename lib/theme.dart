@@ -21,4 +21,11 @@ final ColorScheme darkSheme = ColorScheme.fromSeed(
   tertiary: accentColor,
 );
 
-final theme = ThemeData(colorScheme: lightScheme);
+final theme = ThemeData(
+  colorScheme: lightScheme,
+  appBarTheme: const AppBarTheme(
+      color: primaryColor,
+      shadowColor: secondaryColor,
+      elevation: 5,
+      foregroundColor: Colors.white),
+);
