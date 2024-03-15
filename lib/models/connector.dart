@@ -4,6 +4,7 @@
 /// Classes and functions to handle connectors
 ///
 /// Initializes different types of clients and assigns them to nodes
+library;
 
 import 'dart:async';
 import 'dart:convert';
