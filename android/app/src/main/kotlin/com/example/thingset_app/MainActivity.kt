@@ -1,4 +1,4 @@
-package com.example.thingset_app
+package io.thingset.client
 
 import io.flutter.embedding.android.FlutterActivity
 

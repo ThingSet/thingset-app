@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.thingset_app">
+    package="io.thingset.client">
    <application
         android:label="ThingSet"
         android:name="${applicationName}"
