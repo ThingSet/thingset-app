@@ -87,7 +87,7 @@ class SerialClient extends ThingSetClient {
         } else {
           return ThingSetMessage(
             function: ThingSetFunctionCode.badRequest(),
-            relPath: '',
+            path: '',
             payload: '',
           );
         }
@@ -119,7 +119,7 @@ class SerialClient extends ThingSetClient {
     }
     return ThingSetMessage(
       function: ThingSetFunctionCode.gatewayTimeout(),
-      relPath: '',
+      path: '',
       payload: '',
     );
   }

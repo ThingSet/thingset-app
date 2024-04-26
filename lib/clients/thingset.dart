@@ -69,15 +69,17 @@ class ThingSetFunctionCode {
 
 class ThingSetMessage {
   ThingSetFunctionCode function;
-  String relPath;
+  String path;
   String payload;
 
   ThingSetMessage(
-      {required this.function, required this.relPath, required this.payload});
+      {required this.function, required this.path, required this.payload});
+
+  String get relPath => getRelPath(path);
 
   @override
   String toString() {
-    return '$function$relPath $payload';
+    return '$function$path $payload';
   }
 }
 
@@ -97,7 +99,7 @@ ThingSetMessage? parseThingSetMessage(String str) {
   if (matches != null && matches.groupCount == 2) {
     return ThingSetMessage(
       function: ThingSetFunctionCode.fromString(matches[1]!),
-      relPath: '',
+      path: '',
       payload: matches[2]!,
     );
   }
@@ -105,8 +107,8 @@ ThingSetMessage? parseThingSetMessage(String str) {
   matches = RegExp(reportRegExp).firstMatch(str);
   if (matches != null && matches.groupCount == 2) {
     return ThingSetMessage(
-      function: ThingSetFunctionCode('#'.codeUnitAt(0)),
-      relPath: getRelPath(matches[1]!),
+      function: ThingSetFunctionCode(str.codeUnitAt(0)),
+      path: matches[1]!,
       payload: matches[2]!,
     );
   }

@@ -75,7 +75,7 @@ class WebSocketClient extends ThingSetClient {
     }
     return ThingSetMessage(
       function: ThingSetFunctionCode.gatewayTimeout(),
-      relPath: '',
+      path: '',
       payload: '',
     );
   }

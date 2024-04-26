@@ -158,7 +158,7 @@ class BleClient extends ThingSetClient {
         } else {
           return ThingSetMessage(
             function: ThingSetFunctionCode.badRequest(),
-            relPath: '',
+            path: '',
             payload: '',
           );
         }
@@ -192,7 +192,7 @@ class BleClient extends ThingSetClient {
     }
     return ThingSetMessage(
       function: ThingSetFunctionCode.gatewayTimeout(),
-      relPath: '',
+      path: '',
       payload: '',
     );
   }
