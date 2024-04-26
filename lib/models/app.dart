@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'connector.dart';
 
 import '../clients/thingset_ble.dart';
+import '../clients/thingset_demo.dart';
 import '../clients/thingset_serial.dart';
 import '../clients/thingset_ws.dart';
 
@@ -33,6 +34,19 @@ class AppModel extends ChangeNotifier {
     _connectors[name] = model;
     notifyListeners();
     return name;
+  }
+
+  Future<String?> addDemoConnector() async {
+    var demoClient = DemoClient();
+    var model = ConnectorModel(demoClient);
+    try {
+      await model.connect().timeout(const Duration(seconds: 3));
+    } on TimeoutException {
+      return null;
+    }
+    _connectors['demo'] = model;
+    notifyListeners();
+    return 'demo';
   }
 
   Future<String?> addSerialConnector(String serialPort) async {

@@ -87,6 +87,11 @@ class HomeScreen extends StatelessWidget {
         floatingActionButton: SpeedDial(
           children: [
             SpeedDialChild(
+              child: Icon(_connectorIcon('Demo')),
+              label: 'Demo Connector',
+              onTap: () => appModel.addDemoConnector(),
+            ),
+            SpeedDialChild(
               child: Icon(_connectorIcon('WebSocket')),
               label: 'WebSocket',
               onTap: () => _webSocketDialog(context, appModel),

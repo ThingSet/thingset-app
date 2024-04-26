@@ -44,8 +44,10 @@ class ThingSetFunctionCode {
   ThingSetFunctionCode.fromString(String str)
       : _code = int.parse(str, radix: 16);
 
+  ThingSetFunctionCode.changed() : _code = 0x84;
   ThingSetFunctionCode.content() : _code = 0x85;
   ThingSetFunctionCode.badRequest() : _code = 0xA0;
+  ThingSetFunctionCode.notFound() : _code = 0xA4;
   ThingSetFunctionCode.gatewayTimeout() : _code = 0xC4;
 
   int asInt() => _code;
@@ -113,6 +115,14 @@ ThingSetMessage? parseThingSetMessage(String str) {
     );
   }
 
+  matches = RegExp(reqRegExp).firstMatch(str);
+  if (matches != null && matches.groupCount == 3) {
+    return ThingSetMessage(
+      function: ThingSetFunctionCode(str.codeUnitAt(0)),
+      path: matches[2]!,
+      payload: matches[3]!,
+    );
+  }
   return null;
 }
 
