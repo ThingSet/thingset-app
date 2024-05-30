@@ -3,6 +3,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:rfc_6901/rfc_6901.dart';
@@ -11,8 +12,8 @@ import 'thingset.dart';
 
 const demoNodeID = 'abcd1234';
 
-const initialData = {
-  'pNodeName': 'Smart Thermostat Demo',
+var initialData = {
+  'pNodeName': 'Smart Thermostat',
   'pNodeID': demoNodeID,
   'Sensor': {
     'rRoomTemp_degC': 19.1,
@@ -21,12 +22,18 @@ const initialData = {
   'Control': {
     'rHeaterOn': false,
     'sTargetTemp_degC': 22.0,
-  }
+  },
+  'mLive': [
+    'Sensor/rRoomTemp_degC',
+    'Sensor/rHumidity_pct',
+    'Control/rHeaterOn'
+  ],
 };
 
 class DemoClient extends ThingSetClient {
   final _reports = StreamController<ThingSetMessage>.broadcast();
-  var _data = initialData;
+  StreamSubscription? _rxStreamSubscription;
+  Map<String, Object> _data = initialData;
 
   DemoClient() : super('Demo Connector');
 
@@ -34,7 +41,44 @@ class DemoClient extends ThingSetClient {
   String get id => 'demo';
 
   @override
-  Future<void> connect() async {}
+  Future<void> connect() async {
+    var rng = Random();
+    if (_rxStreamSubscription != null) {
+      return;
+    }
+
+    _rxStreamSubscription = Stream.periodic(const Duration(seconds: 1), (i) {
+      // get references to device data
+      var sensor = _data['Sensor'] as Map;
+      var control = _data['Control'] as Map;
+      var roomTemp = sensor['rRoomTemp_degC'] as double;
+      var targetTemp = control['sTargetTemp_degC'] as double;
+
+      // simulate simple thermostat behaviour
+      roomTemp = roomTemp * 0.95 + (16 + rng.nextDouble() * 10) * 0.05;
+      roomTemp = (roomTemp * 10).roundToDouble() / 10;
+      bool heaterOn = roomTemp < targetTemp;
+
+      // write back variables
+      sensor['rRoomTemp_degC'] = roomTemp;
+      control['rHeaterOn'] = heaterOn;
+
+      // generate report
+      return ThingSetMessage(
+        function: ThingSetFunctionCode('#'.codeUnitAt(0)),
+        path: 'mLive',
+        payload: '{'
+            '"Sensor":{'
+            '"rRoomTemp_degC":${sensor['rRoomTemp_degC']},'
+            '"rHumidity_pct":${sensor['rHumidity_pct']}'
+            '},'
+            '"Control":{"rHeaterOn":$heaterOn}'
+            '}',
+      );
+    }).listen((msg) {
+      _reports.add(msg);
+    });
+  }
 
   @override
   Future<ThingSetMessage> request(String msg) async {
@@ -104,5 +148,7 @@ class DemoClient extends ThingSetClient {
   }
 
   @override
-  Future<void> disconnect() async {}
+  Future<void> disconnect() async {
+    await _rxStreamSubscription?.cancel();
+  }
 }
