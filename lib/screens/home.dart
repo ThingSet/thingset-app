@@ -8,7 +8,9 @@ import 'package:flutter_libserialport/flutter_libserialport.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../clients/thingset_ble.dart';
 import '../models/app.dart';
@@ -26,6 +28,75 @@ class HomeScreen extends StatelessWidget {
       builder: (context, appModel, child) => Scaffold(
         appBar: AppBar(
           title: Center(child: Text(_title)),
+        ),
+        //drawer: const NavigationDrawer(children: [Text('test')]),
+        drawer: NavigationDrawer(
+          children: [
+            DrawerHeader(
+              //decoration: const BoxDecoration(color: Color(0xFFAAAAAA)),
+              child: Image.asset('web/icons/Icon-192.png', width: 50),
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.home,
+              ),
+              title: const Text('Home Screen'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.web,
+              ),
+              title: const Text('Website'),
+              onTap: () {
+                launchUrlString(
+                  'https://thingset.io',
+                  mode: LaunchMode.externalApplication,
+                );
+              },
+            ),
+            FutureBuilder<PackageInfo>(
+              future: PackageInfo.fromPlatform(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  final PackageInfo? packageInfo = snapshot.data;
+                  return AboutListTile(
+                    icon: const Icon(
+                      Icons.info,
+                    ),
+                    applicationIcon:
+                        Image.asset('web/icons/Icon-192.png', width: 50),
+                    applicationName: 'ThingSet App',
+                    applicationVersion: packageInfo?.version ?? '',
+                    aboutBoxChildren: [
+                      ListTile(
+                        title: const Text('Privacy Policy'),
+                        onTap: () {
+                          launchUrlString(
+                            'https://thingset.io/app-privacy-policy.html',
+                            mode: LaunchMode.externalApplication,
+                          );
+                        },
+                      ),
+                      ListTile(
+                        title: const Text('Imprint'),
+                        onTap: () {
+                          launchUrlString(
+                            'https://thingset.io/contact.html',
+                            mode: LaunchMode.externalApplication,
+                          );
+                        },
+                      ),
+                    ],
+                    child: const Text('About'),
+                  );
+                }
+                return const LinearProgressIndicator();
+              },
+            ),
+          ],
         ),
         body: Center(
           child: ListView.builder(
