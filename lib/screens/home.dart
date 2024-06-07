@@ -46,6 +46,14 @@ class HomeScreen extends StatelessWidget {
               },
             ),
             ListTile(
+              leading: Icon(_connectorIcon('Demo Connector')),
+              title: const Text('Create Demo'),
+              onTap: () {
+                appModel.addDemoConnector();
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
               leading: const Icon(
                 Icons.web,
               ),
@@ -158,11 +166,6 @@ class HomeScreen extends StatelessWidget {
         floatingActionButton: SpeedDial(
           children: [
             SpeedDialChild(
-              child: Icon(_connectorIcon('Demo')),
-              label: 'Demo Connector',
-              onTap: () => appModel.addDemoConnector(),
-            ),
-            SpeedDialChild(
               child: Icon(_connectorIcon('WebSocket')),
               label: 'WebSocket',
               onTap: () => _webSocketDialog(context, appModel),
@@ -194,6 +197,8 @@ class HomeScreen extends StatelessWidget {
     switch (clientType) {
       case 'Bluetooth':
         return Icons.bluetooth;
+      case 'Demo Connector':
+        return Icons.play_circle;
       case 'Serial':
         return Icons.terminal;
       case 'WebSocket':
