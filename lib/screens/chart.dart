@@ -4,6 +4,8 @@
 // ToDo: Time ranges 1 min, 5 min, 15 min, 30 min, 1h, 3h
 //
 
+import 'dart:math';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -94,6 +96,38 @@ class LiveChart extends StatelessWidget {
     );
   }
 
+  // calculation inspired by the following StackOverflow post:
+  // https://stackoverflow.com/questions/326679/choosing-an-attractive-linear-scale-for-a-graphs-y-axis
+  (double, double) calcAxisScale() {
+    double max = double.negativeInfinity;
+    double min = double.infinity;
+    for (final selected in node.selectedSeries) {
+      var series = node.timeseries[selected]!;
+      var seriesMax =
+          series.reduce((curr, next) => curr.y > next.y ? curr : next).y;
+      if (seriesMax > max) {
+        max = seriesMax;
+      }
+      var seriesMin =
+          series.reduce((curr, next) => curr.y < next.y ? curr : next).y;
+      if (seriesMin < min) {
+        min = seriesMin;
+      }
+    }
+
+    const tickCount = 6;
+    double range = max - min;
+    double tickDistance = range / (tickCount - 1);
+    double x = (log(10) / log(tickDistance) - 1).ceilToDouble();
+    double pow10x = pow(10, x) as double;
+    double roundedTickRange = ((tickDistance / pow10x) * pow10x).ceilToDouble();
+
+    max = (max / roundedTickRange).ceilToDouble() * roundedTickRange;
+    min = (min / roundedTickRange).floorToDouble() * roundedTickRange;
+
+    return (max, min);
+  }
+
   LineChartData mainData() {
     return LineChartData(
       lineTouchData: const LineTouchData(enabled: false),
@@ -150,6 +184,8 @@ class LiveChart extends StatelessWidget {
             ),
           ),
       ],
+      maxY: calcAxisScale().$1,
+      minY: calcAxisScale().$2,
     );
   }
 }
