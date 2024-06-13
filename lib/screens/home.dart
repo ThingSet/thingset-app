@@ -27,13 +27,11 @@ class HomeScreen extends StatelessWidget {
     return Consumer<AppModel>(
       builder: (context, appModel, child) => Scaffold(
         appBar: AppBar(
-          title: Center(child: Text(_title)),
+          title: Text(_title),
         ),
-        //drawer: const NavigationDrawer(children: [Text('test')]),
         drawer: NavigationDrawer(
           children: [
             DrawerHeader(
-              //decoration: const BoxDecoration(color: Color(0xFFAAAAAA)),
               child: Image.asset('web/icons/Icon-192.png', width: 50),
             ),
             ListTile(
