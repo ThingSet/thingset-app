@@ -18,9 +18,11 @@ class SerialClient extends ThingSetClient {
   StreamSubscription? _rxStreamSubscription;
   SerialPortReader? _serialPortReader;
   final _mutex = Mutex();
+  bool _shellInterface;
 
   SerialClient(this._portName)
       : _port = SerialPort(_portName),
+        _shellInterface = false,
         super('Serial');
 
   @override
@@ -42,6 +44,15 @@ class SerialClient extends ThingSetClient {
         }).transform(const LineSplitter());
 
         _rxStreamSubscription = rxDataStream.listen((str) {
+          // strip all color codes
+          str = str.replaceAll(RegExp(r'\x1B\[[0-9;]*[a-zA-Z]'), '');
+          debugPrint(str);
+
+          // check if the Zephyr shell interface is used
+          if (str.startsWith('uart:~\$')) {
+            _shellInterface = true;
+          }
+
           // check CRC
           if (str.endsWith('#') && str.length > 10) {
             var crcRx = int.parse(str.substring(str.length - 9, str.length - 1),
@@ -66,6 +77,10 @@ class SerialClient extends ThingSetClient {
         }, onError: (dynamic error) {
           debugPrint('Error: $error');
         });
+
+        // send empty line to trigger response from shell (if used)
+        _port.write(Uint8List.fromList('\n\n'.codeUnits), timeout: 100);
+        await Future.delayed(const Duration(milliseconds: 200), () {});
       } else {
         debugPrint('Opening serial port $_portName failed');
       }
@@ -93,9 +108,16 @@ class SerialClient extends ThingSetClient {
         }
       }
 
-      // add CRC to message
-      int crc = crc32(msg);
-      msg = '$msg ${crc.toRadixString(16).padLeft(8, '0').toUpperCase()}#';
+      if (_shellInterface) {
+        // quotation marks have to be escaped on the shell
+        msg = msg.replaceAll('"', '\\"');
+        // add thingset command prefix to the beginning of the message
+        msg = 'thingset $msg';
+      } else {
+        // add CRC to the end of the message (not used for shell)
+        int crc = crc32(msg);
+        msg = '$msg ${crc.toRadixString(16).padLeft(8, '0').toUpperCase()}#';
+      }
 
       await _mutex.acquire();
       debugPrint('request: $msg');
