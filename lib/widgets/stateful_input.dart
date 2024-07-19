@@ -1,6 +1,8 @@
 // Copyright (c) The ThingSet Project Contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -62,13 +64,19 @@ class StatefulTextField extends StatefulWidget {
 class StatefulTextFieldState extends State<StatefulTextField> {
   final controller = TextEditingController();
   late bool isNum = false;
+  late bool isList = false;
 
   @override
   void initState() {
     super.initState();
-    controller.text = widget.value.toString();
     if (widget.value is num) {
       isNum = true;
+      controller.text = widget.value.toString();
+    } else if (widget.value is List) {
+      isList = true;
+      controller.text = widget.value.join(', ');
+    } else {
+      controller.text = widget.value.toString();
     }
   }
 
@@ -85,6 +93,12 @@ class StatefulTextFieldState extends State<StatefulTextField> {
         // maintain type of original data (default would be String)
         if (isNum) {
           widget.onChanged(num.tryParse(value));
+        } else if (isList) {
+          try {
+            widget.onChanged(jsonDecode('[$value]'));
+          } catch (e) {
+            // ignore invalid data
+          }
         } else {
           widget.onChanged(value);
         }
@@ -95,11 +109,9 @@ class StatefulTextFieldState extends State<StatefulTextField> {
         suffixText: widget.unit,
       ),
       controller: controller,
-      keyboardType:
-          isNum ? TextInputType.number : TextInputType.text,
+      keyboardType: isNum ? TextInputType.number : TextInputType.text,
       inputFormatters: [
-        if (isNum)
-          FilteringTextInputFormatter.allow(RegExp('[0-9.-]')),
+        if (isNum) FilteringTextInputFormatter.allow(RegExp('[0-9.-]')),
         if (isNum)
           TextInputFormatter.withFunction(
               (TextEditingValue oldValue, TextEditingValue newValue) {

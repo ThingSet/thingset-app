@@ -423,7 +423,7 @@ class DataItem extends StatelessWidget {
         } else {
           valueWidget = StatefulTextField(
             value: data,
-            unit: unit,
+            unit: data is List ? '' : unit,
             onChanged: (value) {
               node.setDesired(path, value);
             },
@@ -431,7 +431,7 @@ class DataItem extends StatelessWidget {
         }
       } else {
         valueWidget = Text(
-          '$data $unit',
+          data is List ? data.join(', ') : '$data $unit',
           softWrap: true,
           style: const TextStyle(fontSize: 16),
         );
@@ -441,10 +441,13 @@ class DataItem extends StatelessWidget {
         child: ListTile(
           tileColor: Theme.of(context).cardColor,
           title: Text(descr),
-          trailing: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 100),
-            child: valueWidget,
-          ),
+          trailing: data is List
+              ? Text(unit, style: const TextStyle(fontSize: 16))
+              : ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 100),
+                  child: valueWidget,
+                ),
+          subtitle: data is List ? valueWidget : null,
         ),
       );
     }
