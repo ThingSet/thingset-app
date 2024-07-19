@@ -439,8 +439,7 @@ class DataItem extends StatelessWidget {
       return ListTile(
         title: Text(descr),
         trailing: ConstrainedBox(
-          constraints:
-              BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.4),
+          constraints: const BoxConstraints(maxWidth: 100),
           child: valueWidget,
         ),
       );
