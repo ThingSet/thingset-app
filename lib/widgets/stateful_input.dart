@@ -61,11 +61,15 @@ class StatefulTextField extends StatefulWidget {
 
 class StatefulTextFieldState extends State<StatefulTextField> {
   final controller = TextEditingController();
+  late bool isNum = false;
 
   @override
   void initState() {
     super.initState();
     controller.text = widget.value.toString();
+    if (widget.value is num) {
+      isNum = true;
+    }
   }
 
   @override
@@ -79,9 +83,8 @@ class StatefulTextFieldState extends State<StatefulTextField> {
     return TextField(
       onChanged: (value) {
         // maintain type of original data (default would be String)
-        var numValue = num.tryParse(value);
-        if (widget.value is num && numValue != null) {
-          widget.onChanged(numValue);
+        if (isNum) {
+          widget.onChanged(num.tryParse(value));
         } else {
           widget.onChanged(value);
         }
@@ -93,11 +96,11 @@ class StatefulTextFieldState extends State<StatefulTextField> {
       ),
       controller: controller,
       keyboardType:
-          widget.value is num ? TextInputType.number : TextInputType.text,
+          isNum ? TextInputType.number : TextInputType.text,
       inputFormatters: [
-        if (widget.value is num)
+        if (isNum)
           FilteringTextInputFormatter.allow(RegExp('[0-9.-]')),
-        if (widget.value is num)
+        if (isNum)
           TextInputFormatter.withFunction(
               (TextEditingValue oldValue, TextEditingValue newValue) {
             if (['-', '-.', '.', ''].contains(newValue.text)) {
