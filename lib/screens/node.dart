@@ -41,7 +41,6 @@ class NodeScreenState extends State<NodeScreen> {
               Text(
                 node.name,
                 style: const TextStyle(
-                  color: Colors.white,
                   fontSize: 18.0,
                 ),
               ),
@@ -86,7 +85,6 @@ class NodeScreenState extends State<NodeScreen> {
           unselectedFontSize: 14,
           onTap: _onItemTapped,
         ),
-        backgroundColor: const Color(0xFFF0F0F0),
       );
     } else {
       return Scaffold(
@@ -308,6 +306,7 @@ class DataGroup extends StatelessWidget {
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: Card(
+        clipBehavior: Clip.antiAlias,
         child: ExpansionTile(
           trailing: _icons(context),
           controlAffinity: ListTileControlAffinity.leading,
@@ -320,6 +319,7 @@ class DataGroup extends StatelessWidget {
               ),
             ),
           ),
+          backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
           children: <Widget>[
             if (data != null)
               ...ListTile.divideTiles(
@@ -436,11 +436,15 @@ class DataItem extends StatelessWidget {
           style: const TextStyle(fontSize: 16),
         );
       }
-      return ListTile(
-        title: Text(descr),
-        trailing: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 100),
-          child: valueWidget,
+      return Material(
+        type: MaterialType.transparency,
+        child: ListTile(
+          tileColor: Theme.of(context).cardColor,
+          title: Text(descr),
+          trailing: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 100),
+            child: valueWidget,
+          ),
         ),
       );
     }

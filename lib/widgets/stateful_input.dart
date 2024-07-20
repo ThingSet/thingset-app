@@ -216,14 +216,18 @@ class StatefulExecState extends State<StatefulExec> {
         ],
       );
     }
-    return ListTile(
-      title: ElevatedButton(
-        child: Text(widget.description),
-        onPressed: () {
-          widget.onPressed(_paramValues);
-        },
+    return Material(
+      type: MaterialType.transparency,
+      child: ListTile(
+        tileColor: Theme.of(context).cardColor,
+        title: OutlinedButton(
+          child: Text(widget.description),
+          onPressed: () {
+            widget.onPressed(_paramValues);
+          },
+        ),
+        subtitle: paramsWidget,
       ),
-      subtitle: paramsWidget,
     );
   }
 }
