@@ -481,39 +481,34 @@ class Subset extends StatelessWidget {
             ? 'Events'
             : 'Attributes';
 
+    Widget? icon = (node.hasReportingSetup(path))
+        ? IconButton(
+            icon: const Icon(Icons.notifications, color: primaryColor),
+            onPressed: () async {
+              await _reportingSetupDialog(
+                  context, connector, node, subsetName, '_Reporting/$path');
+            },
+          )
+        : null;
+
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: Card(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(15),
-                  child: Text(
-                    '$descr $subsetType',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                if (node.hasReportingSetup(path))
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: IconButton(
-                      icon:
-                          const Icon(Icons.notifications, color: primaryColor),
-                      onPressed: () async {
-                        await _reportingSetupDialog(context, connector, node,
-                            subsetName, '_Reporting/$path');
-                      },
-                    ),
-                  ),
-              ],
+        clipBehavior: Clip.antiAlias,
+        child: ExpansionTile(
+          trailing: icon,
+          controlAffinity: ListTileControlAffinity.leading,
+          title: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Text(
+              '$descr $subsetType',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
             ),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+          children: <Widget>[
             if (data is List && data.length > 0)
               Padding(
                 padding: const EdgeInsets.all(8),
