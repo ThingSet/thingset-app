@@ -12,10 +12,10 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
-      - uses: subosito/flutter-action@v2.12.0
+      - uses: subosito/flutter-action@v2.16.0
         with:
           channel: 'stable'
-          flutter-version: '3.19.x'
+          flutter-version: '3.22.x'
       - name: Install dependencies
         run: |
           sudo apt-get update -y
@@ -58,10 +58,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2.12.0
+      - uses: subosito/flutter-action@v2.16.0
         with:
           channel: 'stable'
-          flutter-version: '3.19.x'
+          flutter-version: '3.22.x'
       - name: Install dependencies
         run: flutter pub get
       - name: Build Windows app
@@ -95,7 +95,7 @@ jobs:
   #     - uses: subosito/flutter-action@v2
   #       with:
   #         channel: 'stable'
-  #         flutter-version: '3.19.x'
+  #         flutter-version: '3.22.x'
   #         architecture: x64
   #     - name: Install dependencies
   #       run: flutter pub get
