@@ -28,7 +28,9 @@ jobs:
           tar -cjvf thingset-app_${{github.ref_name}}-linux.tar.bz2 -C build/linux/x64/release/bundle .
       - name: Build Android app
         run: |
-          sed -i 's/signingConfigs.release/signingConfigs.debug/g' android/app/build.gradle
+          mkdir android/.keystore
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android/.keystore/upload-keystore.jks
+          echo "${{ secrets.ANDROID_KEY_PROPERTIES }}" | base64 --decode > android/key.properties
           flutter build apk
           flutter build appbundle
           cp build/app/outputs/flutter-apk/app-release.apk thingset-app_${{github.ref_name}}.apk
