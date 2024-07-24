@@ -45,13 +45,16 @@ jobs:
           path: |
             thingset-app_*.apk
             thingset-app_*.aab
-      - name: Linux Release
+      - name: Upload release files
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: thingset-app_${{github.ref_name}}-linux.tar.bz2
+          files: |
+            thingset-app_*.apk
+            thingset-app_*.aab
+            thingset-app_*-linux.tar.bz2
 
   windows:
     name: Windows
@@ -73,13 +76,13 @@ jobs:
         with:
           name: thingset-app-windows
           path: build/windows/x64/runner/Release/*
-      - name: Archive Release
+      - name: Archive release
         uses: thedoctor0/zip-release@master
         with:
           type: 'zip'
           filename: thingset-app_${{github.ref_name}}-windows.zip
           directory: build/windows/x64/runner/Release
-      - name: Windows Release
+      - name: Upload release files
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         env:
