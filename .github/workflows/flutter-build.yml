@@ -92,40 +92,40 @@ jobs:
         with:
           files: build/windows/x64/runner/Release/thingset-app_${{github.ref_name}}-windows.zip
 
-  # macos-ios:
-  #   name: macOS & iOS
-  #   runs-on: macos-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: subosito/flutter-action@v2.21.0
-  #       with:
-  #         channel: 'stable'
-  #         flutter-version: '3.32.x'
-  #         architecture: x64
-  #     - name: Install dependencies
-  #       run: flutter pub get
-  #     - name: Build macOS app
-  #       run: |
-  #         flutter config --enable-macos-desktop
-  #         flutter build macos --release
-  #     - name: Build iOS app
-  #       run: |
-  #         flutter build ios --release --no-codesign
-  #     - name: Upload macOS artifacts
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: thingset-app-macos
-  #         path: build/macos/Build/Products/Release/*
-  #     - name: Archive Release
-  #       uses: thedoctor0/zip-release@master
-  #       with:
-  #         type: 'zip'
-  #         filename: thingset-app_${{github.ref_name}}-macos.zip
-  #         directory: build/macos/Build/Products/Release
-  #     - name: macOS Release
-  #       uses: softprops/action-gh-release@v2
-  #       if: startsWith(github.ref, 'refs/tags/')
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         files: build/macos/Build/Products/Release/thingset-app_${{github.ref_name}}-macos.zip
+  macos-ios:
+    name: iOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2.21.0
+        with:
+          channel: "stable"
+          flutter-version: "3.32.x"
+          architecture: x64
+      - name: Install dependencies
+        run: flutter pub get
+      # - name: Build macOS app
+      #   run: |
+      #     flutter config --enable-macos-desktop
+      #     flutter build macos --release
+      - name: Build iOS app
+        run: |
+          flutter build ios --release --no-codesign
+      # - name: Upload macOS artifacts
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: thingset-app-macos
+      #     path: build/macos/Build/Products/Release/*
+      # - name: Archive Release
+      #   uses: thedoctor0/zip-release@master
+      #   with:
+      #     type: "zip"
+      #     filename: thingset-app_${{github.ref_name}}-macos.zip
+      #     directory: build/macos/Build/Products/Release
+      # - name: macOS Release
+      #   uses: softprops/action-gh-release@v2
+      #   if: startsWith(github.ref, 'refs/tags/')
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     files: build/macos/Build/Products/Release/thingset-app_${{github.ref_name}}-macos.zip
