@@ -91,7 +91,7 @@ class LiveChart extends StatelessWidget {
       text = Container();
     }
     return SideTitleWidget(
-      axisSide: meta.axisSide,
+      meta: meta,
       child: text,
     );
   }
