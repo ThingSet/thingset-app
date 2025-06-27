@@ -31,6 +31,7 @@ jobs:
           mkdir android/.keystore
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android/.keystore/upload-keystore.jks
           echo "${{ secrets.ANDROID_KEY_PROPERTIES }}" | base64 --decode > android/key.properties
+          yes | flutter doctor --android-licenses
           flutter build apk
           flutter build appbundle
           cp build/app/outputs/flutter-apk/app-release.apk thingset-app_${{github.ref_name}}.apk
