@@ -16,8 +16,11 @@ class NodeScreen extends StatefulWidget {
   final String connectorName;
   final String nodeId;
 
-  const NodeScreen(
-      {super.key, required this.connectorName, required this.nodeId});
+  const NodeScreen({
+    super.key,
+    required this.connectorName,
+    required this.nodeId,
+  });
 
   @override
   State<NodeScreen> createState() => NodeScreenState();
@@ -28,8 +31,9 @@ class NodeScreenState extends State<NodeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ConnectorModel? connector =
-        Provider.of<AppModel>(context).connector(widget.connectorName);
+    ConnectorModel? connector = Provider.of<AppModel>(
+      context,
+    ).connector(widget.connectorName);
     NodeModel? node = connector?.nodes[widget.nodeId];
     if (connector != null && node != null) {
       return Scaffold(
@@ -38,12 +42,7 @@ class NodeScreenState extends State<NodeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                node.name,
-                style: const TextStyle(
-                  fontSize: 18.0,
-                ),
-              ),
+              Text(node.name, style: const TextStyle(fontSize: 18.0)),
               Text(
                 node.id,
                 style: const TextStyle(
@@ -56,9 +55,7 @@ class NodeScreenState extends State<NodeScreen> {
         ),
         body: (_selectedIndex == 0)
             ? FutureBuilder<void>(
-                future: Future.wait([
-                  connector.pullNodeRoot(node.id),
-                ]),
+                future: Future.wait([connector.pullNodeRoot(node.id)]),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
                     return NodeData(connector: connector, node: node);
@@ -88,9 +85,7 @@ class NodeScreenState extends State<NodeScreen> {
       );
     } else {
       return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.nodeId),
-        ),
+        appBar: AppBar(title: Text(widget.nodeId)),
         body: const Center(child: Text('Node not found')),
       );
     }
@@ -115,7 +110,7 @@ class LiveView extends StatelessWidget {
       child: ChangeNotifierProvider<NodeModel>.value(
         value: node,
         child: Consumer<NodeModel>(
-          builder: (_, model, __) => LiveChart(node: node),
+          builder: (_, model, _) => LiveChart(node: node),
         ),
       ),
     );
@@ -133,7 +128,7 @@ class NodeData extends StatelessWidget {
     return ChangeNotifierProvider<NodeModel>.value(
       value: node,
       child: Consumer<NodeModel>(
-        builder: (_, model, __) => ListView(
+        builder: (_, model, _) => ListView(
           shrinkWrap: true,
           padding: const EdgeInsets.all(8),
           children: _listDataObjects(
@@ -191,7 +186,7 @@ List<Widget> _listDataObjects(
           itemName: item,
           path: path.isEmpty ? item : '$path/$item',
           data: data[item],
-        )
+        ),
   ];
 
   List<String> tags = [];
@@ -201,14 +196,16 @@ List<Widget> _listDataObjects(
     }
   }
   if (tags.isNotEmpty) {
-    list.add(Padding(
-      padding: const EdgeInsets.all(8),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: tags.map((tag) => Chip(label: Text(tag))).toList(),
+    list.add(
+      Padding(
+        padding: const EdgeInsets.all(8),
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: tags.map((tag) => Chip(label: Text(tag))).toList(),
+        ),
       ),
-    ));
+    );
   }
 
   return list;
@@ -217,10 +214,7 @@ List<Widget> _listDataObjects(
 class DataRecords extends StatelessWidget {
   final String name;
 
-  const DataRecords({
-    super.key,
-    required this.name,
-  });
+  const DataRecords({super.key, required this.name});
 
   @override
   Widget build(BuildContext context) {
@@ -233,9 +227,7 @@ class DataRecords extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             child: Text(
               name,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
           children: const <Widget>[
@@ -284,7 +276,12 @@ class DataGroup extends StatelessWidget {
               icon: const Icon(Icons.notifications, color: primaryColor),
               onPressed: () async {
                 await _reportingSetupDialog(
-                    context, connector, node, groupName, '_Reporting/$path/_');
+                  context,
+                  connector,
+                  node,
+                  groupName,
+                  '_Reporting/$path/_',
+                );
               },
             ),
           IconButton(
@@ -314,9 +311,7 @@ class DataGroup extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             child: Text(
               thingsetSplitCamelCaseName(groupName),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
           backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
@@ -324,14 +319,8 @@ class DataGroup extends StatelessWidget {
             if (data != null)
               ...ListTile.divideTiles(
                 context: context,
-                tiles: _listDataObjects(
-                  context,
-                  connector,
-                  node,
-                  path,
-                  data,
-                ),
-              )
+                tiles: _listDataObjects(context, connector, node, path, data),
+              ),
           ],
           onExpansionChanged: (value) async {
             if (value == true) {
@@ -361,7 +350,10 @@ class DataItem extends StatelessWidget {
   });
 
   Future<void> execRequest(
-      BuildContext context, String descr, List<dynamic> values) async {
+    BuildContext context,
+    String descr,
+    List<dynamic> values,
+  ) async {
     var resp = await connector.exec(node.id, path, values);
     String msg = 'Execution failed.';
     if (resp != null) {
@@ -380,26 +372,28 @@ class DataItem extends StatelessWidget {
         msg = 'Received response with error code: $code';
       }
     }
-    // ignore: use_build_context_synchronously
-    await showDialog<String>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: Text(descr),
-        content: Text(msg),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.pop(context, 'OK'),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
+    if (context.mounted) {
+      await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: Text(descr),
+          content: Text(msg),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'OK'),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    var descr =
-        thingsetSplitCamelCaseName(itemName.split('_').first.substring(1));
+    var descr = thingsetSplitCamelCaseName(
+      itemName.split('_').first.substring(1),
+    );
     var unit = thingsetParseUnit(itemName);
 
     if (itemName[0] == 'x') {
@@ -472,21 +466,27 @@ class Subset extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var descr =
-        thingsetSplitCamelCaseName(subsetName.split('_').first.substring(1));
+    var descr = thingsetSplitCamelCaseName(
+      subsetName.split('_').first.substring(1),
+    );
 
     final subsetType = subsetName[0] == 'm'
         ? 'Metrics'
         : subsetName[0] == 'e'
-            ? 'Events'
-            : 'Attributes';
+        ? 'Events'
+        : 'Attributes';
 
     Widget? icon = (node.hasReportingSetup(path))
         ? IconButton(
             icon: const Icon(Icons.notifications, color: primaryColor),
             onPressed: () async {
               await _reportingSetupDialog(
-                  context, connector, node, subsetName, '_Reporting/$path');
+                context,
+                connector,
+                node,
+                subsetName,
+                '_Reporting/$path',
+              );
             },
           )
         : null;
@@ -502,9 +502,7 @@ class Subset extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             child: Text(
               '$descr $subsetType',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
           backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
@@ -520,7 +518,7 @@ class Subset extends StatelessWidget {
                       Chip(
                         label: Text(item),
                         //onDeleted: () => {}
-                      )
+                      ),
                   ],
                 ),
               ),
@@ -532,11 +530,12 @@ class Subset extends StatelessWidget {
 }
 
 Future<void> _reportingSetupDialog(
-    BuildContext context,
-    ConnectorModel connector,
-    NodeModel node,
-    String groupName,
-    String path) async {
+  BuildContext context,
+  ConnectorModel connector,
+  NodeModel node,
+  String groupName,
+  String path,
+) async {
   await connector.pull(node.id, path);
   // ignore: use_build_context_synchronously
   if (!context.mounted) return;
@@ -548,13 +547,7 @@ Future<void> _reportingSetupDialog(
         title: const Text('Reporting Setup'),
         children: <Widget>[
           if (data != null)
-            ..._listDataObjects(
-              context,
-              connector,
-              node,
-              path,
-              data,
-            ),
+            ..._listDataObjects(context, connector, node, path, data),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -573,13 +566,14 @@ Future<void> _reportingSetupDialog(
                 },
               ),
               TextButton(
-                  style: TextButton.styleFrom(
-                    textStyle: Theme.of(context).textTheme.labelLarge,
-                  ),
-                  child: const Text('Cancel'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  }),
+                style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                ),
+                child: const Text('Cancel'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
             ],
           ),
         ],

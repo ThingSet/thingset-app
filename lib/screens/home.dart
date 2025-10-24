@@ -322,7 +322,7 @@ class HomeScreen extends StatelessWidget {
               child: ChangeNotifierProvider<BleScanner>.value(
                 value: bleScanner,
                 child: Consumer<BleScanner>(
-                  builder: (_, model, __) => ListView.builder(
+                  builder: (_, model, _) => ListView.builder(
                     padding: const EdgeInsets.all(8),
                     itemCount: bleScanner.devices.length,
                     itemBuilder: (BuildContext context, int index) {
@@ -387,7 +387,7 @@ class NodesList extends StatelessWidget {
     return ChangeNotifierProvider<ConnectorModel>(
       create: (_) => _connector,
       child: Consumer<ConnectorModel>(
-        builder: (_, model, __) {
+        builder: (_, model, _) {
           return FutureBuilder<void>(
             future: model.updateNodes(),
             builder: (context, snapshot) {
