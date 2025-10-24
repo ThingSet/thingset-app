@@ -15,7 +15,7 @@ jobs:
       - uses: subosito/flutter-action@v2.21.0
         with:
           channel: "stable"
-          flutter-version: "3.32.x"
+          flutter-version: "3.35.x"
       - name: Install dependencies
         run: |
           sudo apt-get update -y
@@ -67,7 +67,7 @@ jobs:
       - uses: subosito/flutter-action@v2.21.0
         with:
           channel: "stable"
-          flutter-version: "3.32.x"
+          flutter-version: "3.35.x"
       - name: Install dependencies
         run: flutter pub get
       - name: Build Windows app
@@ -101,7 +101,7 @@ jobs:
       - uses: subosito/flutter-action@v2.21.0
         with:
           channel: "stable"
-          flutter-version: "3.32.x"
+          flutter-version: "3.35.x"
           architecture: x64
       - name: Install dependencies
         run: flutter pub get
