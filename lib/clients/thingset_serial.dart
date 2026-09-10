@@ -33,10 +33,14 @@ class SerialClient extends ThingSetClient {
     if (!_port.isOpen) {
       await _mutex.acquire();
       if (_port.openReadWrite()) {
-        _port.config.baudRate = 115200;
-        _port.config.bits = 8;
-        _port.config.parity = 0;
-        _port.config.stopBits = 1;
+        final config = SerialPortConfig();
+
+        config.baudRate = 115200;
+        config.bits = 8;
+        config.parity = SerialPortParity.none;
+        config.stopBits = 1;
+
+        _port.config = config;
 
         _serialPortReader = SerialPortReader(_port, timeout: 3000);
         final rxDataStream = _serialPortReader!.stream.map((data) {
